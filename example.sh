@@ -39,3 +39,5 @@ python translate.py \
 
 ## Calculate BLEU score for model outputs
 perl multi-bleu.perl -lc ${TEST_EN_GOLD} < ${TEST_EN_PRED} | tee "${EXP_ROOT}/bleu.txt"
+
+read

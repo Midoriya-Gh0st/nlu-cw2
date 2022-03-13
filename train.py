@@ -112,7 +112,7 @@ def main(args):
 
         # Iterate over the training set
         for i, sample in enumerate(progress_bar):
-
+            # -- 遍历training set
             if len(sample) == 0:
                 continue
             model.train()

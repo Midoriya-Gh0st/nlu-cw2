@@ -31,6 +31,7 @@ def get_args():
 
 def main(args):
     """ Main translation function' """
+    print(">>> in translate.py")
     # Load arguments from checkpoint
     torch.manual_seed(args.seed)
     state_dict = torch.load(args.checkpoint_path, map_location=lambda s, l: default_restore_location(s, 'cpu'))

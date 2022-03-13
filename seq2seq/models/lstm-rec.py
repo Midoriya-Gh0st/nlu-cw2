@@ -6,8 +6,6 @@ from seq2seq import utils
 from seq2seq.models import Seq2SeqModel, Seq2SeqEncoder, Seq2SeqDecoder
 from seq2seq.models import register_model, register_model_architecture
 
-# 继承了Seq2SeqModel, Seq2SeqEncoder, Seq2SeqDecoder
-# 需要重写build_model(), forward()等;
 
 @register_model('lstm')
 class LSTMModel(Seq2SeqModel):
@@ -95,52 +93,51 @@ class LSTMEncoder(Seq2SeqEncoder):
         self.bidirectional = bidirectional
         self.hidden_size = hidden_size
         self.output_dim = 2 * hidden_size if bidirectional else hidden_size
-        print(">>> initial encoder.")
 
         if pretrained_embedding is not None:
             self.embedding = pretrained_embedding
         else:
             self.embedding = nn.Embedding(len(dictionary), embed_dim, dictionary.pad_idx)
             # -- 一个简单的存储固定大小的词典的嵌入向量的查找表
-            # -- 给一个编号，嵌入层就能返回这个编号对应的嵌入向量
-        print("[test-02: self.embd]:", type(self.embedding), '\n', self.embedding)
-        # print("self.embedding[0]:", self.embedding[0])
+            # -- 给一个编号(index)，嵌入层就能返回这个编号(index)对应的嵌入向量
+            # print("[test-02: self.embd]:", type(self.embedding), '\n', self.embedding)
+            # >>> [test-02: self.embd]: <class 'torch.nn.modules.sparse.Embedding'>
+            # >>> Embedding(5047, 64, padding_idx=0)
+            # Loaded a source dictionary (de) with 5047 words, 5047表示德语单词数
+            # https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
 
         dropout_lstm = dropout_out if num_layers > 1 else 0.
-        self.lstm = nn.LSTM(input_size=embed_dim,    # 看这里的prompt提示, return: [output, (hn, cn)]
+        self.lstm = nn.LSTM(input_size=embed_dim,
                             hidden_size=hidden_size,
                             num_layers=num_layers,
                             dropout=dropout_lstm,
                             bidirectional=bool(bidirectional))
 
+    # forward()函数被隐式调用, model(data)
     def forward(self, src_tokens, src_lengths):
         """ Performs a single forward pass through the instantiated encoder sub-network. """
         # Embed tokens and apply dropout
-        print(">>> forward():")
         # print("[test-01: src_tokens.size()]")
-        # print(src_tokens.size())  # torch.Size([10, 22])
+        # print(src_tokens.size())  # torch.Size([10, 22])  # 10: 一个batch的10个句子, 22: 一个句子的22个单词;
         batch_size, src_time_steps = src_tokens.size()  # -- 多少句子, 每个句子多少单词(time_step)
         src_embeddings = self.embedding(src_tokens)  # -- 获取根据src_tokens的词嵌入
         # print("[test-03: src_embeddings]")
         # print(type(src_embeddings))  # <class 'torch.Tensor'>
-        # print(src_embeddings.size())  # torch.Size([10, 22, 64])
+        # print(src_embeddings.size())
         # print("-----")
         _src_embeddings = F.dropout(src_embeddings, p=self.dropout_in, training=self.training)
 
         # Transpose batch: [batch_size, src_time_steps, num_features] -> [src_time_steps, batch_size, num_features]
         src_embeddings = _src_embeddings.transpose(0, 1)
-        # print("[test-05: src_embeddings.T]")             # [句子数(batch), 单词数(length), hidden_size]
-        # print("src_emb.T.size:", src_embeddings.size())  # tensor, torch.Size([6, 10, 64]) -> torch.Size([22, 10, 64])
-        print("src_emb.T:", src_embeddings)
-        # 在本epoch内, 遍历了一个batch,该batch有10个句子, 每个句子有6~22个单词.
+        # print("[test-05: src_embeddings.T]")
+        # print("src_emb.T.size:", src_embeddings.size())  # tensor: torch.Size([6, 10, 64]) -> torch.Size([22, 10, 64])
 
         # Pack embedded tokens into a PackedSequence
         packed_source_embeddings = nn.utils.rnn.pack_padded_sequence(src_embeddings, src_lengths.data.tolist())
-        # PackedSequence将长度不同的序列数据封装成一个batch --- 表示一个batch
         # def pack_padded_sequence(input: Any, lengths: Any, ...)
         # - input – padded batch of variable length sequences. # 输入的多个句子
         # - lengths – list of sequences lengths of each batch element # 一个list, 包含每个句子的长度.
-        # print("[test-04: src_lengths]")  # [每个句子的长度]. 其len=10表示有10个句子.
+        # print("[test-04: src_lengths]")
         # print("- type():", type(src_lengths))
         # print("- size():", src_lengths.size())
         # print("- value:", src_lengths)
@@ -148,15 +145,11 @@ class LSTMEncoder(Seq2SeqEncoder):
         # print("- 2. len():", len(src_lengths.data.tolist()))
         # print("- PSEmb-type:", type(packed_source_embeddings))
         # print("- PSEmb:", packed_source_embeddings)
-        # print("- PSE.data.size:", packed_source_embeddings.data.size())
-        # print("- PSE.data:", packed_source_embeddings.data)
         # ---------------------
         # [test-04: src_lengths]
         # - type(): <class 'torch.Tensor'>
         # - size(): torch.Size([10])
-        # - value:
-        # tensor([ 7,  7,  7,  7,  7,  7,  7,  6,  6,  6])  # 10个句子, 每个句子的单词数. (本次forward, 执行一个batch)
-        # tensor([22, 21, 21, 21, 21, 21, 21, 20, 20, 20])
+        # - value: tensor([22, 21, 21, 21, 21, 21, 21, 20, 20, 20])  # 表示每个batch有多少句子
         # - 2. type(): <class 'list'>
         # - 2. len(): 10
         # - PSEmb-type: <class 'torch.nn.utils.rnn.PackedSequence'>
@@ -169,14 +162,9 @@ class LSTMEncoder(Seq2SeqEncoder):
         #         [ 2.1548,  1.4835,  2.6627,  ...,  0.5063,  0.9463,  0.1058]]),
         #         batch_sizes=tensor([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
         #         10, 10,  7,  1]), sorted_indices=None, unsorted_indices=None)
-        # PSEmb的长度是什么?
-        # 前10个是一个句子, 前10个是一个句子 ... 前7个是一个句子, 前1个是一个句子...
-        # 总记: 20*10 + 7 + 1 = 208个单词.
+        #         上面显示了22个数,
         #
-        # - PSE.data.size: torch.Size([208, 64]) # 总结208个单词, 每个单词hidden=64; - 208可变, 可以是共192个单词, etc.
-        # - PSE.data: tensor([[ 0.9948, -1.4781, -0.8279,  ...,  0.5874,  0.3822,  0.8345],
-        #         ...,
-        #         [ 2.1548,  1.4835,  2.6627,  ...,  0.5063,  0.9463,  0.1058]])
+        # PackedSequence.batch_sizes (Tensor) – Tensor of integers holding information about the batch size at each sequence step
 
         # Pass source input through the recurrent layer(s)
         if self.bidirectional:
@@ -189,7 +177,6 @@ class LSTMEncoder(Seq2SeqEncoder):
 
         packed_outputs, (final_hidden_states, final_cell_states) = self.lstm(packed_source_embeddings,
                                                                              (hidden_initial, context_initial))
-        # return [output, (hn, cn)]
 
         # Unpack LSTM outputs and optionally apply dropout (dropout currently disabled)
         lstm_output, _ = nn.utils.rnn.pad_packed_sequence(packed_outputs, padding_value=0.)
@@ -204,23 +191,22 @@ class LSTMEncoder(Seq2SeqEncoder):
                 sent_tensor = create_sentence_tensor(...) 
                 # sent_tensor.size = [batch, sent_len, hidden]
         2.  Describe what happens when self.bidirectional is set to True. 
-            #-- If self.bidirectional is True, the final_hidden_states and final_cell_states of two directions will be 
-            # concatenated separately by the dimension of hidden units
+                   #-- If self.bidirectional is True, the final_hidden_states and final_cell_states of two directions will be concanated seperately by the dimension of hidden units
         3.  What is the difference between final_hidden_states and final_cell_states?
-            #-- The final_hidden_states is the last hidden unit of each sentence and the final_cell_states 
-            # is the last cell unit of lstm cells
+                   #-- The final_hidden_states is the last hidden unit of each sentence and the final_cell_states is the last cell unit of lstm cells
         '''
         if self.bidirectional:
             def combine_directions(outs):
                 return torch.cat([outs[0: outs.size(0): 2], outs[1: outs.size(0): 2]], dim=2)
-            final_hidden_states = combine_directions(final_hidden_states)
-            # -- torch.Size(1，final_hidden_states.size(0),4)
-            final_cell_states = combine_directions(final_cell_states)
-            # -- torch.Size(1，final_cell_states.size(0),4)
+
+            final_hidden_states = combine_directions(
+                final_hidden_states)  # -- torch.Size(1，final_hidden_states.size(0),4)
+            final_cell_states = combine_directions(final_cell_states)  # -- torch.Size(1，final_cell_states.size(0),4)
+
         '''___QUESTION-1-DESCRIBE-A-END___'''
 
         # Generate mask zeroing-out padded positions in encoder inputs
-        src_mask = src_tokens.eq(self.dictionary.pad_idx)
+        src_mask = src_tokens.eq(self.dictionary.pad_idx)  # -- [batch_size, src_time_steps]
 
         return {'src_embeddings': _src_embeddings.transpose(0, 1),
                 'src_out': (lstm_output, final_hidden_states, final_cell_states),
@@ -229,6 +215,7 @@ class LSTMEncoder(Seq2SeqEncoder):
 
 class AttentionLayer(nn.Module):
     """ Defines the attention layer class. Uses Luong's global attention with the general scoring function. """
+
     def __init__(self, input_dims, output_dims):
         super().__init__()
         # Scoring method is 'general'
@@ -236,10 +223,9 @@ class AttentionLayer(nn.Module):
         self.context_plus_hidden_projection = nn.Linear(input_dims + output_dims, output_dims, bias=False)
 
     def forward(self, tgt_input, encoder_out, src_mask):
-        # tgt_input has shape = [batch_size, input_dims]
-        # encoder_out has shape = [src_time_steps, batch_size, output_dims]
-        # src_mask has shape = [batch_size, src_time_steps]
-
+        # tgt_input has shape = [batch_size, input_dims] #-- [句子数, 隐藏单元数]
+        # encoder_out has shape = [src_time_steps, batch_size, output_dims] #-- [单词数，句子数，隐藏单元数]
+        # src_mask has shape = [batch_size, src_time_steps] #-- [句子数，单词数]
         # Get attention scores
         # [batch_size, src_time_steps, output_dims]
         encoder_out = encoder_out.transpose(1, 0)  # -- encoder的输出张量 [句子数，单词数，隐藏单元数]
@@ -255,24 +241,22 @@ class AttentionLayer(nn.Module):
                 sent_tensor = create_sentence_tensor(...) 
                 # sent_tensor.size = [batch, sent_len, hidden]
         2.  Describe how the attention context vector is calculated. 
-         - First, we compute the attention score, by adding a new dimension to the masked token vector 'src_mask' 
-         and adapting masked_filled function to it to make all the False value equal to '-inf'. 
-         This way we can make the masked token account for nothing in the attention score matrix. 
-         - Then delete the dimension added just now and the score remains and we get attention weights. 
-         - At last, we multiple the attention weights and the output of the encoder to compute the attention 
-         context of the model.
+      # First, we compute the attention score, by adding a new dimension to the masked token vector 'src_mask' and adapting masked_filled function to it to make all the False value equal to '-inf'. This way we can make the masked token account for nothing in the attention score matrix. Then delete the dimension added just now and the score remains and we get attention weights. At last, we multiple the attention weights and the output of the encoder to compute the attention context of the model.
         3.  Why do we need to apply a mask to the attention scores?
-         - To make sure that the attention mechanism will not share any information of the tokens in the future, 
-         when we predict the token with previous ones.
+      # To make sure that the attention mechanism will not share any information of the tokens in the future, when we predict the token with previous ones.
         '''
         if src_mask is not None:
-            src_mask = src_mask.unsqueeze(dim=1)
-            attn_scores.masked_fill_(src_mask, float('-inf'))
+            src_mask = src_mask.unsqueeze(dim=1)  # src_mask.size() = torch.Size([batch_size,1,src_time_steps])
+            attn_scores.masked_fill_(src_mask, float(
+                '-inf'))  ##### attn_scores.size() = torch.Size([batch_size,1,src_time_steps])
 
-        attn_weights = F.softmax(attn_scores, dim=-1)
-        attn_context = torch.bmm(attn_weights, encoder_out).squeeze(dim=1)
-        context_plus_hidden = torch.cat([tgt_input, attn_context], dim=1)
-        attn_out = torch.tanh(self.context_plus_hidden_projection(context_plus_hidden))
+        attn_weights = F.softmax(attn_scores, dim=-1)  # attn_weights.size() = torch.Size([batch_size,src_time_steps])
+        attn_context = torch.bmm(attn_weights, encoder_out).squeeze(
+            dim=1)  # attn_context.size() = torch.Size([batch_size,output_dims])
+        context_plus_hidden = torch.cat([tgt_input, attn_context],
+                                        dim=1)  # context_plus_hidden.size() = torch.size([batch_size, input_dims+output_dims])
+        attn_out = torch.tanh(self.context_plus_hidden_projection(
+            context_plus_hidden))  # attn_out.size() = torch.size([hidden_size,hidden_size])
         '''___QUESTION-1-DESCRIBE-B-END___'''
 
         return attn_out, attn_weights.squeeze(dim=1)
