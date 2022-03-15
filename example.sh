@@ -31,13 +31,14 @@ mkdir -p ${EXP_ROOT}
 python train.py --save-dir "${EXP_ROOT}" \
                 --log-file "${EXP_ROOT}/log.out"  \
                 --data "${DATA_DIR}" \
-                --encoder-bidirectional "${FALSE}"
+                ### --encoder-bidirectional "${FALSE}" ###
                 ### ADDITIONAL ARGUMENTS HERE ###
 
 ## Prediction step
 python translate.py \
     --checkpoint-path "${EXP_ROOT}/checkpoint_best.pt" \
     --output "${TEST_EN_PRED}" \
+
 
 ## Calculate BLEU score for model outputs
 perl multi-bleu.perl -lc ${TEST_EN_GOLD} < ${TEST_EN_PRED} | tee "${EXP_ROOT}/bleu.txt"

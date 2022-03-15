@@ -56,6 +56,7 @@ def main(args):
                                                                          seed=args.seed))
     # Build model and criterion
     model = models.build_model(args, src_dict, tgt_dict)
+    print(">>>>> translate.py\n[args:]", args)
     if args.cuda:
         model = model.cuda()
     model.eval()

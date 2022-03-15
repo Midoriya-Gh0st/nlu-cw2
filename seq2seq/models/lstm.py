@@ -8,6 +8,7 @@ from seq2seq.models import register_model, register_model_architecture
 # 继承了Seq2SeqModel, Seq2SeqEncoder, Seq2SeqDecoder
 # 需要重写build_model(), forward()等;
 
+BI = False
 
 @register_model('lstm')
 class LSTMModel(Seq2SeqModel):
@@ -96,6 +97,8 @@ class LSTMEncoder(Seq2SeqEncoder):
         self.hidden_size = hidden_size
         self.output_dim = 2 * hidden_size if bidirectional else hidden_size
         print(">>> initial encoder.")
+        print("1.bidirectional:", bidirectional, self.bidirectional)
+        # assert self.bidirectional == str(BI)  # string(False)
 
         if pretrained_embedding is not None:
             self.embedding = pretrained_embedding
@@ -104,7 +107,7 @@ class LSTMEncoder(Seq2SeqEncoder):
             # -- 一个简单的存储固定大小的词典的嵌入向量的查找表
             # -- 给一个编号，嵌入层就能返回这个编号对应的嵌入向量
         print("[test-02: self.embd]:", type(self.embedding), '\n', self.embedding)
-        # print("self.embedding[0]:", self.embedding[0])
+        # print("self.embedding[0]:", self.embedding[0])  # 不可以这样使用
 
         dropout_lstm = dropout_out if num_layers > 1 else 0.
         self.lstm = nn.LSTM(input_size=embed_dim,    # 看这里的prompt提示, return: [output, (hn, cn)]
@@ -179,6 +182,8 @@ class LSTMEncoder(Seq2SeqEncoder):
         #         [ 2.1548,  1.4835,  2.6627,  ...,  0.5063,  0.9463,  0.1058]])
 
         # Pass source input through the recurrent layer(s)
+        # print(">>> check:", self.bidirectional)
+
         if self.bidirectional:  # biRNN的 encoder_layer, 双层
             state_size = 2 * self.num_layers, batch_size, self.hidden_size
         else:  # self.num_layers在输入时为1(lstm), 若bi, 在这里*2;
@@ -187,15 +192,15 @@ class LSTMEncoder(Seq2SeqEncoder):
         hidden_initial = src_embeddings.new_zeros(*state_size)
         context_initial = src_embeddings.new_zeros(*state_size)
         # [2, batch_size(本batch句子数量), 64]  # 2表示两个方向
-        print('[test-06-1]: hidden_initial')
-        print(f'size: {hidden_initial.size()}')  # [2, 10, 64]
+        # print('[test-06-1]: hidden_initial')
+        # print(f'size: {hidden_initial.size()}')  # [2, 10, 64]
 
         packed_outputs, (final_hidden_states, final_cell_states) = self.lstm(packed_source_embeddings,
                                                                              (hidden_initial, context_initial))
         # return [output, (hn, cn)]  # 最后一阶段的hidden和cell信息
-        print('[test-06-2]: final_hidden_states')
-        print(f'size-h: {final_hidden_states.size()}')  # [2, 10, 64]
-        print(f'size-c: {final_cell_states.size()}')  # [2, 10, 64]
+        # print('[test-06-2]: final_hidden_states')
+        # print(f'size-h: {final_hidden_states.size()}')  # [2, 10, 64]
+        # print(f'size-c: {final_cell_states.size()}')  # [2, 10, 64]
 
         # Unpack LSTM outputs and optionally apply dropout (dropout currently disabled)
         lstm_output, _ = nn.utils.rnn.pad_packed_sequence(packed_outputs, padding_value=0.)
@@ -218,19 +223,19 @@ class LSTMEncoder(Seq2SeqEncoder):
             # is the last cell unit of lstm cells
             # todo: 是否还要解释cell unit和hidden unit的区别&具体含义. 
         '''
-        print("[test-06-2]: final_hidden_states")
-        print(f'biRNN?: {self.bidirectional}')
-        print(f"size: {final_cell_states.size()}")
+        # print("[test-06-2]: final_hidden_states")
+        # print(f'biRNN?: {self.bidirectional}')
+        # print(f"size: {final_cell_states.size()}")  # torch.Size([2, 10, 64])
         if self.bidirectional:
             def combine_directions(outs):
                 # 在dim2(hidden)上合并 (合并的是hidden unites)
-                print('out.size(0):', outs.size(0))
+                # print('out.size(0):', outs.size(0))
                 return torch.cat([outs[0: outs.size(0): 2], outs[1: outs.size(0): 2]], dim=2)
             final_hidden_states = combine_directions(final_hidden_states)
-            print(f"cat-size: {final_hidden_states.size()}")
-            # -- torch.Size(1，final_hidden_states.size(0),4)  # [2, 10, 64] => [1, 10, 128], 把两个方向的hidden64拼接
+            # print(f"cat-size: {final_hidden_states.size()}")  # torch.Size([1, 10, 128])
+            # -- # [2, 10, 64] => [1, 10, 128], 把两个方向的hidden64拼接 [加入batch, 表示10句话用以填充一次hidden]
             final_cell_states = combine_directions(final_cell_states)
-            # -- torch.Size(1，final_cell_states.size(0),4)
+            # --
         '''___QUESTION-1-DESCRIBE-A-END___'''
 
         # Generate mask zeroing-out padded positions in encoder inputs

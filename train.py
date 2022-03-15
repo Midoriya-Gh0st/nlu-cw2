@@ -80,6 +80,7 @@ def main(args):
 
     # Build model and optimization criterion
     model = models.build_model(args, src_dict, tgt_dict)
+    print(">>> train.py\n[args]:", args)
     logging.info('Built a model with {:d} parameters'.format(sum(p.numel() for p in model.parameters())))
     criterion = nn.CrossEntropyLoss(ignore_index=src_dict.pad_idx, reduction='sum')
 
