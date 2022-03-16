@@ -376,6 +376,7 @@ class AttentionLayer(nn.Module):
         # print("size::attn_score:", attn_scores.size())  # torch.Size([10, 1, 22])
         # [10, 1, 128] * [10, 128, 22] = [10, 1, 22]
         # 表示: 10个句子, 每个句子有一个score; ... 怎么解释? [22个浮点数], 有什么含义?
+        # alignment_score, 或者说是 attention_score, 表示这个句子中, 对这些words的看重程度 (现在还没有归一化);
         print("score:", attn_scores)
 
         '''___QUESTION-1-DESCRIBE-C-END___'''
