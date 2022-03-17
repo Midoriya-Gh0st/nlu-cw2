@@ -61,7 +61,7 @@ def main(args):
     np.random.seed(42)
 
     utils.init_logging(args)
-    checkpoint_path='./results/baseline/checkpoint_best.pt'
+
     # Load dictionaries
     src_dict = Dictionary.load(os.path.join(args.data, 'dict.{:s}'.format(args.source_lang)))
     logging.info('Loaded a source dictionary ({:s}) with {:d} words'.format(args.source_lang, len(src_dict)))

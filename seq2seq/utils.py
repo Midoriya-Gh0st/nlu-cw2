@@ -112,9 +112,6 @@ def set_incremental_state(module, incremental_state, key, value):
     if incremental_state is not None:
         full_key = _get_full_incremental_state_key(module, key)
         incremental_state[full_key] = value
-        print('#######################################')
-        print(incremental_state)
-        print('###########################################')
 
 
 def post_process_prediction(hypo_tokens, src_str, alignment, tgt_dict, remove_bpe):

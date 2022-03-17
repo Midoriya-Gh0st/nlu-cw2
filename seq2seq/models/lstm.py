@@ -507,6 +507,7 @@ class LSTMDecoder(Seq2SeqDecoder):
 
             input_feed = tgt_embeddings.data.new(batch_size, self.hidden_size).zero_()
             print('input_feed size:', len(input_feed))
+
             # 创建一个与tgt_embeddings的data相同type的tensor, size=(batch_size, self.hidden_size), 全0;
             # todo: 如果这里decoder的forward表示一整个流程, 那么这里的代码有什么作用? 不是必定从None开始吗?
             print("//" * 60)  # 有输出, 确实经过这里, 且第一个step就经过这里了; 之后一直都有, 说明一直是none;
