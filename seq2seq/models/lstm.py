@@ -357,7 +357,7 @@ class AttentionLayer(nn.Module):
         return attn_out, attn_weights.squeeze(dim=1)
 
     def score(self, tgt_input, encoder_out):
-        """ Computes attention scores. """  # todo: 到底是 attention score 还是 alignment score?
+        """ Computes attention scores. """  # attn_score (alignment_score_with_attn)
 
         '''
         ___QUESTION-1-DESCRIBE-C-START___
@@ -382,8 +382,7 @@ class AttentionLayer(nn.Module):
         # 22或者6, 都是句子长度(单词个数);
         # y = x(W.T)  这里W.T是tensor_var, 属于内部变量;
         # todo: 那么这里projected_encoder_out表示什么? 表示被[权重]处理过的encoder_output吗? (Wa * hs)
-        # todo: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是我们算出来的吗?
-        # todo: 调用线性变换linear()的作用? 数值确实变了, 有什么作用?
+        # todo: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是"自己"算出来的吗
 
         attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)  # todo: 这里用的不是简单的ht*hs吗?
         # todo: 解答: 即: 不是简单的 ht*hs, 而是 ht * (Wa*hs), 即: general_score;
@@ -492,7 +491,9 @@ class LSTMDecoder(Seq2SeqDecoder):
             - full_key? 是指 [module_name, module_instance(id), key] 这个整体;
             ----------- 然而set_incremental_state, 没有效果
         4.  What role does input_feed play?
-            - 
+            - input feed: output from previous time_step
+            - [1] 获取初始lstm_input: lstm_input = torch.cat([tgt_embeddings[j, :, :], input_feed], dim=1) # 511
+            - [2] 即: 把前一刻的h(t)~, 结合这一刻的embedding, 作为作为当前lstm_time_step的输入.
         '''
         # todo: _get_full_incremental_state_key(module_instance, key):
         # 的 module_instance是什么, key是什么(instance的id?);
@@ -503,9 +504,6 @@ class LSTMDecoder(Seq2SeqDecoder):
             # 应该是指previous_token_state
             # [incremental state]: 保存一些seq需要的"state": hidden state, cell state;
             tgt_hidden_states, tgt_cell_states, input_feed = cached_state
-            # todo: input feed: output from previous time_step
-            # [1] 获取初始lstm_input: lstm_input = torch.cat([tgt_embeddings[j, :, :], input_feed], dim=1) # 511
-            # [2]
             print("="*60)  # 没有输出
             assert 1 == 2  # 不会中断, 即cached_state始终为None?
         else:
@@ -548,7 +546,7 @@ class LSTMDecoder(Seq2SeqDecoder):
         # 所以en_num_layers=2, de_num_layers=1;
 
         print("[test-13-4] tgt_time_steps:", tgt_time_steps)  # 1->25
-        # todo: 25哪来的?
+        # todo: 25哪来的?  tgt_src_time_steps?
         # todo: 这里循环的目的: 不断更新tgt_hidden_state,
         # todo: input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
         # todo: rnn_outputs.append(input_feed)
@@ -560,9 +558,6 @@ class LSTMDecoder(Seq2SeqDecoder):
                 # Pass target input through the recurrent layer(s)
                 tgt_hidden_states[layer_id], tgt_cell_states[layer_id] = \
                     rnn_layer(lstm_input, (tgt_hidden_states[layer_id], tgt_cell_states[layer_id]))  # lstm的三个input_vector
-                # todo: 表示对states的更新吗?  # 这些states在上面代码获取, 从cache, 或者从all_zero创建;
-                # 但是用的是相同的layer_id, 若只有一个layer, 这里是表示每个time_step对这个layer的更新吗?
-                # todo: 在encoder中forward()是 single forward, 这里的是整个forward流程吗?
                 # 不断遍历更新: tgt_hidden_states[0]
 
                 # Current hidden state becomes input to the subsequent layer; apply dropout
@@ -608,7 +603,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                 # print("[size::step_attn_weights]:", step_attn_weights.size())  # todo: torch.Size([10, 22])
                 # 当前tgt_word对于[batch_size, len(words)](所有句子的所有单词)的 attn_weights. 为什么? (在decoder里怎么应用attention?)
                 # print("[size::attn_weights]:", attn_weights.size())
-                # todo: (?) torch.Size([10, 25, 22]), torch.Size([10, 22, 22]), torch.Size([10, 20, 22])
+                # torch.Size([10, 25, 22]), torch.Size([10, 22, 22]), torch.Size([10, 20, 22])
 
                 if self.use_lexical_model:
                     # __QUESTION-5: Compute and collect LEXICAL MODEL context vectors here
@@ -619,11 +614,11 @@ class LSTMDecoder(Seq2SeqDecoder):
             input_feed = F.dropout(input_feed, p=self.dropout_out, training=self.training)
             rnn_outputs.append(input_feed)
             # print("[test-13-3] rnn_output:", len(rnn_outputs))
-            # todo: 是用rnn_outputs来记录每个time_step的输出 (吗?)
-            # todo: 从输出看到, 在每个time_step, 都记录了[time_step]次;
-            # todo: 比如: 在time_step=21, rnn_outputs() append 21次;
+            # 是用rnn_outputs来记录每个time_step的输出, 最后再合并 [√]
+            # 从输出看到, 在每个time_step, 都记录了[time_step]次;
+            # 比如: 在time_step=21, rnn_outputs() append 21次;
             # 就是说, decoder-forward调用了多次, 从第一个单词->最后一个单词, 但是在每个单词, 都从第一个单词开始
-            # todo: 原理是什么?
+            # 原理是什么: global_attn, 用到所有当前time_step前面的所有前置times_steps;
             '''___QUESTION-1-DESCRIBE-E-END___'''
 
         # assert 1 == 2
