@@ -121,7 +121,7 @@ class LSTMEncoder(Seq2SeqEncoder):
         """ Performs a single forward pass through the instantiated encoder sub-network. """
         # Embed tokens and apply dropout
         print(">>> en-forward():")
-        # todo: 为什么循环50次? 50从哪里来?
+        # 为什么循环50次? 50从哪里来? - 500 test, 10/batch, 50 batches;
         # print("[test-01: src_tokens.size()]")
         # print(src_tokens.size())  # torch.Size([10, 22])  [本batch的句子数量, 单个句子的长度]
         batch_size, src_time_steps = src_tokens.size()  # -- 多少句子, 每个句子多少单词(time_step)
@@ -258,21 +258,31 @@ class AttentionLayer(nn.Module):
         self.src_projection = nn.Linear(input_dims, output_dims, bias=False)
         self.context_plus_hidden_projection = nn.Linear(input_dims + output_dims, output_dims, bias=False)
         print("[test-09] attn-layer")
-        print("input-dims:", input_dims)    # 128
-        print("output-dims:", output_dims)  # 128
-        print("src_proj:", self.src_projection)  # Linear(in_features=128, out_features=128, bias=False)
-        print("con_+_hidden:", self.context_plus_hidden_projection)  # Linear(in_features=256, out_features=128, bias=False)
+        # print("input-dims:", input_dims)    # 128
+        # print("output-dims:", output_dims)  # 128
+        # print("src_proj:", self.src_projection)  # Linear(in_features=128, out_features=128, bias=False)
+        # print("con_+_hidden:", self.context_plus_hidden_projection)  # Linear(in_features=256, out_features=128, bias=False)
 
     def forward(self, tgt_input, encoder_out, src_mask):
-        # tgt_input has shape = [batch_size, input_dims]
-        # encoder_out has shape = [src_time_steps, batch_size, output_dims]
+        # tgt_input has shape = [batch_size, input_dims]  # [10, 128]
+        """
+            [10, 128]: 按batch运行. 进行matrix之间的操作, 不影响单个block;
+            10个句子, 每个句子的前src_time_steps的hidden_state;
+        """
+        # encoder_out has shape = [src_time_steps, batch_size, output_dims]  # [22, 10, 128]
         # src_mask has shape = [batch_size, src_time_steps]
-        # todo: 这里input/output是啥? encoder_out是上面return的 (三维tuple吗?)
-        # todo: tgt_input是要输入的target句子吗?
+        """  这里input/output是啥? encoder_out是上面return的 (三维tuple吗?)
+             - tgt_input: tgt_hidden_state, 为rnn_layer()的输出 (hidden);
+             - encoder_out: 就是encoder的返回值;
+        """
+        print(">>> [attn-forward]")
 
         # Get attention scores
         # [batch_size, src_time_steps, output_dims]
         # print('[test-09]')
+        # input()
+        # print('[encoder_out]:', encoder_out.size())
+        # input()
         # print("size-0::encoder_out:", encoder_out.size())  # torch.Size([22, 10, 128])
         # print("value-0::encoder_out:", encoder_out)
         encoder_out = encoder_out.transpose(1, 0)  # -- encoder的输出张量 [句子数，单词数，隐藏单元数]
@@ -326,15 +336,20 @@ class AttentionLayer(nn.Module):
         # print("size::attn_weights:", attn_weights.size())     # torch.Size([10, 1, 22])
         # print("value::attn_weights:", attn_weights)
         attn_context = torch.bmm(attn_weights, encoder_out).squeeze(dim=1)  # [10,1,22], [10,22,128]) => [10,1,128] => [10,128]
-        # [√] todo: attn_context 表示什么?
+        # [√] attn_context 表示什么?
         # context (with attention) vector: c = attn_w * encoder_hidden.T,  # 对src_hidden的加权;
         # 即: computed as the weighted average over all the source hidden states  [成立√]
         context_plus_hidden = torch.cat([tgt_input, attn_context], dim=1)
-        # todo: context_plus_hidden 表示什么?
+        """  context_plus_hidden 表示什么?
+             - (1) attention_vector, 即: context_vector;
+             - (2) tgt_input, 即: tgt_hidden_state;
+        """
         # 公式(5):  h(t)~ = tanh(Wc[c(t); h(t)]  # 文中: 简单的把ct和ht的信息联合起来一起使用;
         # Wc来自哪里? - 使用linear(), 会自动introduce这个weight;
-        attn_out = torch.tanh(self.context_plus_hidden_projection(context_plus_hidden))  # h(t)~
-        # todo: projection的作用是什么? 一个fc全连接层, 然后把"context_plus_hidden"的特征映射到这个dim=[x x]的空间?
+        attn_out = torch.tanh(self.context_plus_hidden_projection(context_plus_hidden))
+        """ attn_out = h(t)~ = attention_vector """
+        # projection的作用是什么? 一个fc全连接层, 然后把"context_plus_hidden"的特征映射到这个dim=[x x]的空间?
+        # linear -> w提取出来
 
         # 步骤总结: p4, 3.1, 最后一段: go from ht -> at -> ct -> ht~;
         '''___QUESTION-1-DESCRIBE-B-END___'''
@@ -435,12 +450,12 @@ class LSTMDecoder(Seq2SeqDecoder):
         """ Performs the forward pass through the instantiated model. """
         # Optionally, feed decoder input token-by-token
         print(">>> de-forward:")
-        print("^" * 20, "[test-13-1: tgt_inputs]:", tgt_inputs.size())
+        # print("^" * 20, "[test-13-1: tgt_inputs]:", tgt_inputs.size())
         if incremental_state is not None:
             tgt_inputs = tgt_inputs[:, -1:]
             # todo: tgt_inputs是tgt_hidden_states, [10, 128];
             # todo: 为什么是tgt_inputs[:, -1:]?
-            print("&"*20, "[test-13: tgt_inputs]:", tgt_inputs.size())
+            # print("&"*20, "[test-13: tgt_inputs]:", tgt_inputs.size())
             # todo: 然而并没有调用incremental_state
 
         # __QUESTION-5 : Following code is to assist with the LEXICAL MODEL implementation
@@ -494,23 +509,23 @@ class LSTMDecoder(Seq2SeqDecoder):
             print("="*60)  # 没有输出
             assert 1 == 2  # 不会中断, 即cached_state始终为None?
         else:
-            print('tgt_inputs size:', tgt_inputs.size())  # - tgt_inputs size: torch.Size([10, 11])
+            # print('tgt_inputs size:', tgt_inputs.size())  # - tgt_inputs size: torch.Size([10, 11])
             # -- len(self.layers)->1
 
             tgt_hidden_states = [torch.zeros(tgt_inputs.size()[0], self.hidden_size) for i in range(len(self.layers))]
-            print('tgt_hidden_states size:', tgt_hidden_states[0].size())
-            input()
+            # print('tgt_hidden_states size:', tgt_hidden_states[0].size())
+            # input()
 
             tgt_cell_states = [torch.zeros(tgt_inputs.size()[0], self.hidden_size) for i in range(len(self.layers))]
             # tgt_inputs.size()[0]? 表示词数吗? 句子长.
-            print('tgt_cell_states size:', len(tgt_cell_states))
+            # print('tgt_cell_states size:', len(tgt_cell_states))
 
             input_feed = tgt_embeddings.data.new(batch_size, self.hidden_size).zero_()
-            print('input_feed size:', len(input_feed))
+            # print('input_feed size:', len(input_feed))
 
             # 创建一个与tgt_embeddings的data相同type的tensor, size=(batch_size, self.hidden_size), 全0;
             # todo: 如果这里decoder的forward表示一整个流程, 那么这里的代码有什么作用? 不是必定从None开始吗?
-            print("//" * 60)  # 有输出, 确实经过这里, 且第一个step就经过这里了; 之后一直都有, 说明一直是none;
+            # print("//" * 60)  # 有输出, 确实经过这里, 且第一个step就经过这里了; 之后一直都有, 说明一直是none;
             # assert 1 == 2
         '''___QUESTION-1-DESCRIBE-D-END___'''
 
@@ -532,15 +547,19 @@ class LSTMDecoder(Seq2SeqDecoder):
         # 参数中, encoder_num_layer 和 decoder_num_layer 都是 1, 但是bidirectional=True;
         # 所以en_num_layers=2, de_num_layers=1;
 
-        print("[test-13-4] tgt_time_steps:", tgt_time_steps)  # 25
+        print("[test-13-4] tgt_time_steps:", tgt_time_steps)  # 1->25
+        # todo: 25哪来的?
+        # todo: 这里循环的目的: 不断更新tgt_hidden_state,
+        # todo: input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
+        # todo: rnn_outputs.append(input_feed)
         for j in range(tgt_time_steps):  # 遍历tgt_sent的words;
-            print("[test-13-5] tgt_time_steps:", tgt_time_steps)  # 25
+            # print("[test-13-5] tgt_time_steps:", tgt_time_steps)  # 25
             # Concatenate the current token embedding with output from previous time step (i.e. 'input feeding')
             lstm_input = torch.cat([tgt_embeddings[j, :, :], input_feed], dim=1)
             for layer_id, rnn_layer in enumerate(self.layers):
                 # Pass target input through the recurrent layer(s)
                 tgt_hidden_states[layer_id], tgt_cell_states[layer_id] = \
-                    rnn_layer(lstm_input, (tgt_hidden_states[layer_id], tgt_cell_states[layer_id]))
+                    rnn_layer(lstm_input, (tgt_hidden_states[layer_id], tgt_cell_states[layer_id]))  # lstm的三个input_vector
                 # todo: 表示对states的更新吗?  # 这些states在上面代码获取, 从cache, 或者从all_zero创建;
                 # 但是用的是相同的layer_id, 若只有一个layer, 这里是表示每个time_step对这个layer的更新吗?
                 # todo: 在encoder中forward()是 single forward, 这里的是整个forward流程吗?
@@ -599,7 +618,7 @@ class LSTMDecoder(Seq2SeqDecoder):
 
             input_feed = F.dropout(input_feed, p=self.dropout_out, training=self.training)
             rnn_outputs.append(input_feed)
-            print("[test-13-3] rnn_output:", len(rnn_outputs))
+            # print("[test-13-3] rnn_output:", len(rnn_outputs))
             # todo: 是用rnn_outputs来记录每个time_step的输出 (吗?)
             # todo: 从输出看到, 在每个time_step, 都记录了[time_step]次;
             # todo: 比如: 在time_step=21, rnn_outputs() append 21次;
@@ -612,11 +631,18 @@ class LSTMDecoder(Seq2SeqDecoder):
         # Cache previous states (only used during incremental, auto-regressive generation)
         utils.set_incremental_state(
             self, incremental_state, 'cached_state', (tgt_hidden_states, tgt_cell_states, input_feed))
-        print(f"[test-13-6]: {type(incremental_state)}", incremental_state)  # NoneType, None
+        # print(f"[test-13-6]: {type(incremental_state)}", incremental_state)  # NoneType, None
         # todo: 根本就没用到?
 
         # Collect outputs across time steps
         decoder_output = torch.cat(rnn_outputs, dim=0).view(tgt_time_steps, batch_size, self.hidden_size)
+        """ 
+            rnn_outputs包含每时刻 ht~ (context, tgt_hidden)
+            decoder_output, 把前t时刻, ht~, 合并起来; [paper, 3.1:]
+            ... idea is to consider all the hidden states of the encoder when deriving the context vector C(t)
+            => 即: 跑到target的第5个单词时, 从第一个单词开始 [for 循环 attention_forward()],
+                   然后用 rnn_outputs[] 不断append每个单词的hidden_state, 最后合并起来(即: global attention); 
+        """
 
         # Transpose batch back: [tgt_time_steps, batch_size, num_features] -> [batch_size, tgt_time_steps, num_features]
         decoder_output = decoder_output.transpose(0, 1)
