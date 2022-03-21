@@ -1,0 +1,7 @@
+1. When annotating the shape of tensors, you do not need to differentiate "hidden_size", "input_size" (of a layer), "output_size" (of a layer), "hidden_state", "state_size" and all similar expressions -- they all means the hidden state within the model. What you should differentiate is "hidden" v.s. "batch" v.s. "sent_len"
+
+2. Question 6-c-1 and 6-c-3 ask the same thing (the tensor dimension). So you can just ignore 6-c-3
+
+3. Question 5 only asks you to implement section 4 of Nguyen& Chiang 2017. So you can ignore things in its section 3 like normalization.
+
+4. Question 6-a-3 asks why transformers require positional embeddings while LSTMs do not.

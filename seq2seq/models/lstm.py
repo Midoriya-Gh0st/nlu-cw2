@@ -382,12 +382,10 @@ class AttentionLayer(nn.Module):
         # 22或者6, 都是句子长度(单词个数);
         # y = x(W.T)  这里W.T是tensor_var, 属于内部变量;
         # todo: 那么这里projected_encoder_out表示什么? 表示被[权重]处理过的encoder_output吗? (Wa * hs)
-        # todo: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是"自己"算出来的吗
+        # todo: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是"自己"算出来的.
 
         attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)  # todo: 这里用的不是简单的ht*hs吗?
-        # todo: 解答: 即: 不是简单的 ht*hs, 而是 ht * (Wa*hs), 即: general_score;
-        # todo: 但是一定是 ht * (Wa * hs)吗? 可以是 (ht * Wa) * hs 吗?
-        # todo: 这个Wa到底表示什么? attention weight? alignment weight? 但是在上面已经求出来attn_weight了.
+        # 即: 不是简单的 ht*hs, 而是 ht * (Wa*hs), 即: general_score;
 
         # print("size::attn_score:", attn_scores.size())  # torch.Size([10, 1, 22])
         # [10, 1, 128] * [10, 128, 22] = [10, 1, 22]
@@ -493,7 +491,8 @@ class LSTMDecoder(Seq2SeqDecoder):
         4.  What role does input_feed play?
             - input feed: output from previous time_step
             - [1] 获取初始lstm_input: lstm_input = torch.cat([tgt_embeddings[j, :, :], input_feed], dim=1) # 511
-            - [2] 即: 把前一刻的h(t)~, 结合这一刻的embedding, 作为作为当前lstm_time_step的输入.
+            - [2] 即: 把前一刻的h(t)~, 结合这一刻的embedding, 作为当前lstm_time_step的输入. 
+                  -- 注意在第一次用全零初始化, 在之后用tgt_hidden_state[-1]来初始化, 见556, marked;
         '''
         # todo: _get_full_incremental_state_key(module_instance, key):
         # 的 module_instance是什么, key是什么(instance的id?);
@@ -520,6 +519,7 @@ class LSTMDecoder(Seq2SeqDecoder):
 
             input_feed = tgt_embeddings.data.new(batch_size, self.hidden_size).zero_()
             # print('input_feed size:', len(input_feed))
+            # 这里表示的是第一次初始化, 用全零初始化, 到后面的time_step的时候, 用前一时刻的tgt_hidden_state来做初始化, 即:tgt_hidden_state[-1].
 
             # 创建一个与tgt_embeddings的data相同type的tensor, size=(batch_size, self.hidden_size), 全0;
             # todo: 如果这里decoder的forward表示一整个流程, 那么这里的代码有什么作用? 不是必定从None开始吗?
@@ -570,7 +570,11 @@ class LSTMDecoder(Seq2SeqDecoder):
             2.  How is attention integrated into the decoder? 
                 - 
             3.  Why is the attention function given the previous target state as one of its inputs? 
+                - 分析原论文的函数, 联系笔记图, [?] previous_tgt_state & 本时刻embedding ...
+                - 代码上: 调用attention, 其实会调用attention_layer的forward()函数, 所以需要作为tgt_input();
+                - 理论上: previous?
             4.  What is the purpose of the dropout layer?
+                - ... 网络资料有.
             '''
             # print("[test-12] input_feed")
             # print("[size::tgt_hidden_states]:", len(tgt_hidden_states))  # len=1
@@ -581,6 +585,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                 assert 1 == 2
             else:
                 input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
+                # todo: 这里的tgt_hidden_states[-1], 表示的是前一时刻的tgt_hidden,
                 # self.attention() 调用attention_layer(),
                 # -> return attn_out, attn_weights.squeeze(dim=1)
                 # attn_out即: tanh(Wc * context_plus_hidden)
@@ -596,7 +601,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                 # 为什么要tgt_hidden_states?
                 # 调用attention_func, 会自动调用attn_forward(tgt_input, encoder_out, src_mask)
 
-                attn_weights[:, j, :] = step_attn_weights
+                attn_weights[:, j, :] = step_attn_weights  # step_attn表示当前时间段, 关于所有encoder_out的attn;
                 # 填充attn_weights
 
                 # print("[size::input_feed-3]:", input_feed.size())  # torch.Size([10, 128])
