@@ -558,11 +558,15 @@ class LSTMDecoder(Seq2SeqDecoder):
                 # Pass target input through the recurrent layer(s)
                 tgt_hidden_states[layer_id], tgt_cell_states[layer_id] = \
                     rnn_layer(lstm_input, (tgt_hidden_states[layer_id], tgt_cell_states[layer_id]))  # lstm的三个input_vector
-                # 不断遍历更新: tgt_hidden_states[0]
+                # 不断遍历更新: tgt_hidden_states[0]是全零, 之后再不断根据上一time_step更新; # 在本time_step实际只有一层,
+                # 说根据上一time_step更新, 是指外面那个j-loop;
+                # todo: 这里左边的 tgt_hidden_states, 是在本时刻, 在深度层次上, 比如, 根据第二层, 更新第三层.. 最终本time_step取最后一layer;
+                # todo: 但是在layer[0], 用的是上一time_step的layer[-1];
 
                 # Current hidden state becomes input to the subsequent layer; apply dropout
                 lstm_input = F.dropout(tgt_hidden_states[layer_id], p=self.dropout_out, training=self.training)
-                # 将当前的tgt_hidden_state作为下一个lstm_layer的input (指深度上的lstm(下一层), 不是序列上的"下一个");
+                # todo: 将当前的tgt_hidden_state作为下一个lstm_layer的input (指深度上的lstm(下一层), 不是序列上的"下一个");
+                # 更新的是每一层的tgt_hidden_states;
 
             '''
             ___QUESTION-1-DESCRIBE-E-START___
@@ -586,6 +590,15 @@ class LSTMDecoder(Seq2SeqDecoder):
             else:
                 input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
                 # todo: 这里的tgt_hidden_states[-1], 表示的是前一时刻的tgt_hidden,
+                # todo: 为什么是前一时刻的? 因为要产生下一时刻的input_feed;
+                # todo: 前一时刻的attn, 前一时刻的
+
+                # todo: 为什么是previous?
+                # todo: 这里用到的是 [for layer_id] [循环]中的更新过的  tgt_hidden_states, 并且[-1]表示lstm最后一个layer
+                # todo: 所以我认为这个tgt_hidden_states是当前时刻的;
+
+                # 如果attn是当前的, 则input_feed是当前的输出, 用于下一时刻的输入
+
                 # self.attention() 调用attention_layer(),
                 # -> return attn_out, attn_weights.squeeze(dim=1)
                 # attn_out即: tanh(Wc * context_plus_hidden)
@@ -617,7 +630,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                     # TODO: --------------------------------------------------------------------- /CUT
 
             input_feed = F.dropout(input_feed, p=self.dropout_out, training=self.training)
-            rnn_outputs.append(input_feed)
+            rnn_outputs.append(input_feed)  # todo: 是本时刻的输出, 还是上一时刻的输出?
             # print("[test-13-3] rnn_output:", len(rnn_outputs))
             # 是用rnn_outputs来记录每个time_step的输出, 最后再合并 [√]
             # 从输出看到, 在每个time_step, 都记录了[time_step]次;
