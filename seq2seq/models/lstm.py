@@ -121,7 +121,7 @@ class LSTMEncoder(Seq2SeqEncoder):
     def forward(self, src_tokens, src_lengths):
         """ Performs a single forward pass through the instantiated encoder sub-network. """
         # Embed tokens and apply dropout
-        print(">>> en-forward():")
+        # print(">>> en-forward():")
         # 为什么循环50次? 50从哪里来? - 500 test, 10/batch, 50 batches;
         # print("[test-01: src_tokens.size()]")
         # print(src_tokens.size())  # torch.Size([10, 22])  [本batch的句子数量, 单个句子的长度]
@@ -258,7 +258,7 @@ class AttentionLayer(nn.Module):
         # Scoring method is 'general'
         self.src_projection = nn.Linear(input_dims, output_dims, bias=False)
         self.context_plus_hidden_projection = nn.Linear(input_dims + output_dims, output_dims, bias=False)
-        print("[test-09] attn-layer")
+        # print("[test-09] attn-layer")
         # print("input-dims:", input_dims)    # 128
         # print("output-dims:", output_dims)  # 128
         # print("src_proj:", self.src_projection)  # Linear(in_features=128, out_features=128, bias=False)
@@ -276,7 +276,7 @@ class AttentionLayer(nn.Module):
              - tgt_input: tgt_hidden_state, 为rnn_layer()的输出 (hidden);
              - encoder_out: 就是encoder的返回值;
         """
-        print(">>> [attn-forward]")
+        # print(">>> [attn-forward]")
 
         # Get attention scores
         # [batch_size, src_time_steps, output_dims]
@@ -448,7 +448,7 @@ class LSTMDecoder(Seq2SeqDecoder):
         # TODO: 并没有找到更改或者给inc_state赋值的地方;
         """ Performs the forward pass through the instantiated model. """
         # Optionally, feed decoder input token-by-token
-        print(">>> de-forward:")
+        # print(">>> de-forward:")
         # print("^" * 20, "[test-13-1: tgt_inputs]:", tgt_inputs.size())
         if incremental_state is not None:
             tgt_inputs = tgt_inputs[:, -1:]
@@ -547,7 +547,7 @@ class LSTMDecoder(Seq2SeqDecoder):
         # 参数中, encoder_num_layer 和 decoder_num_layer 都是 1, 但是bidirectional=True;
         # 所以en_num_layers=2, de_num_layers=1;
 
-        print("[test-13-4] tgt_time_steps:", tgt_time_steps)  # 1->25
+        # print("[test-13-4] tgt_time_steps:", tgt_time_steps)  # 1->25
         # TODO: 25哪来的?  tgt_src_time_steps?
         # TODO: 这里循环的目的: 不断更新tgt_hidden_state,
         # TODO: input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
