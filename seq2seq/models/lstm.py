@@ -225,7 +225,7 @@ class LSTMEncoder(Seq2SeqEncoder):
         3.  What is the difference between final_hidden_states and final_cell_states?
             #-- The final_hidden_states is the last hidden unit of each sentence and the final_cell_states 
             # is the last cell unit of lstm cells
-            # todo: 是否还要解释cell unit和hidden unit的区别&具体含义. 
+            # TODO: 是否还要解释cell unit和hidden unit的区别&具体含义. 
         '''
         # print("[test-06-2]: final_hidden_states")
         # print(f'biRNN?: {self.bidirectional}')
@@ -326,7 +326,7 @@ class AttentionLayer(nn.Module):
             # print("[test-08]: attn-score")
             # print("size::attn_score:", attn_scores.size())  # torch.Size([10, 1, 22])
             # print("value-0::attn_score:", attn_scores)
-            attn_scores.masked_fill_(src_mask, float('-inf'))    # todo: 设定成-inf. 其余的attn有负值, 因此使用-inf;
+            attn_scores.masked_fill_(src_mask, float('-inf'))    # TODO: 设定成-inf. 其余的attn有负值, 因此使用-inf;
             # print("value-1::attn_score:", attn_scores)         # 把在attn_scores中的value_0转化为value_-inf;
 
         # 公式7: alignment_vec = align(h_t, h_s) = softmax(score(h_t, h_s));
@@ -382,10 +382,10 @@ class AttentionLayer(nn.Module):
         # => linear(encoder_out) = (10, 22, 128) * (128, 128) => (10, 22, 128)  # 虽然size相同, 但是value不同;
         # 22或者6, 都是句子长度(单词个数);
         # y = x(W.T)  这里W.T是tensor_var, 属于内部变量;
-        # todo: 那么这里projected_encoder_out表示什么? 表示被[权重]处理过的encoder_output吗? (Wa * hs)
-        # todo: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是"自己"算出来的.
+        # TODO: 那么这里projected_encoder_out表示什么? 表示被[权重]处理过的encoder_output吗? (Wa * hs)
+        # TODO: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是"自己"算出来的.
 
-        attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)  # todo: 这里用的不是简单的ht*hs吗?
+        attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)  # TODO: 这里用的不是简单的ht*hs吗?
         # 即: 不是简单的 ht*hs, 而是 ht * (Wa*hs), 即: general_score;
 
         # print("size::attn_score:", attn_scores.size())  # torch.Size([10, 1, 22])
@@ -445,17 +445,17 @@ class LSTMDecoder(Seq2SeqDecoder):
             # TODO: --------------------------------------------------------------------- /CUT
 
     def forward(self, tgt_inputs, encoder_out, incremental_state=None):
-        # todo: 并没有找到更改或者给inc_state赋值的地方;
+        # TODO: 并没有找到更改或者给inc_state赋值的地方;
         """ Performs the forward pass through the instantiated model. """
         # Optionally, feed decoder input token-by-token
         print(">>> de-forward:")
         # print("^" * 20, "[test-13-1: tgt_inputs]:", tgt_inputs.size())
         if incremental_state is not None:
             tgt_inputs = tgt_inputs[:, -1:]
-            # todo: tgt_inputs是tgt_hidden_states, [10, 128];
-            # todo: 为什么是tgt_inputs[:, -1:]?
+            # TODO: tgt_inputs是tgt_hidden_states, [10, 128];
+            # TODO: 为什么是tgt_inputs[:, -1:]?
             # print("&"*20, "[test-13: tgt_inputs]:", tgt_inputs.size())
-            # todo: 然而并没有调用incremental_state
+            # TODO: 然而并没有调用incremental_state
 
         # __QUESTION-5 : Following code is to assist with the LEXICAL MODEL implementation
         # Recover encoder input
@@ -496,12 +496,12 @@ class LSTMDecoder(Seq2SeqDecoder):
             - [2] 即: 把前一刻的h(t)~, 结合这一刻的embedding, 作为当前lstm_time_step的输入. 
                   -- 注意在第一次用全零初始化, 在之后用tgt_hidden_state[-1]来初始化, 见556, marked;
         '''
-        # todo: _get_full_incremental_state_key(module_instance, key):
+        # TODO: _get_full_incremental_state_key(module_instance, key):
         # 的 module_instance是什么, key是什么(instance的id?);
         cached_state = utils.get_incremental_state(self, incremental_state, 'cached_state')  ### TODO: NoneType ?
         # print('cached_state size:',cached_state.size())
         if cached_state is not None:
-            # todo: 是指 previous_token_state吗? 还是指需要p_t_state的一些layers(conv/hidden)?
+            # TODO: 是指 previous_token_state吗? 还是指需要p_t_state的一些layers(conv/hidden)?
             # 应该是指previous_token_state
             # [incremental state]: 保存一些seq需要的"state": hidden state, cell state;
             tgt_hidden_states, tgt_cell_states, input_feed = cached_state
@@ -524,7 +524,7 @@ class LSTMDecoder(Seq2SeqDecoder):
             # 这里表示的是第一次初始化, 用全零初始化, 到后面的time_step的时候, 用前一时刻的tgt_hidden_state来做初始化, 即:tgt_hidden_state[-1].
 
             # 创建一个与tgt_embeddings的data相同type的tensor, size=(batch_size, self.hidden_size), 全0;
-            # todo: 如果这里decoder的forward表示一整个流程, 那么这里的代码有什么作用? 不是必定从None开始吗?
+            # TODO: 如果这里decoder的forward表示一整个流程, 那么这里的代码有什么作用? 不是必定从None开始吗?
             # print("//" * 60)  # 有输出, 确实经过这里, 且第一个step就经过这里了; 之后一直都有, 说明一直是none;
             # assert 1 == 2
         '''___QUESTION-1-DESCRIBE-D-END___'''
@@ -548,10 +548,10 @@ class LSTMDecoder(Seq2SeqDecoder):
         # 所以en_num_layers=2, de_num_layers=1;
 
         print("[test-13-4] tgt_time_steps:", tgt_time_steps)  # 1->25
-        # todo: 25哪来的?  tgt_src_time_steps?
-        # todo: 这里循环的目的: 不断更新tgt_hidden_state,
-        # todo: input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
-        # todo: rnn_outputs.append(input_feed)
+        # TODO: 25哪来的?  tgt_src_time_steps?
+        # TODO: 这里循环的目的: 不断更新tgt_hidden_state,
+        # TODO: input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
+        # TODO: rnn_outputs.append(input_feed)
         for j in range(tgt_time_steps):  # 遍历tgt_sent的words;
             # print("[test-13-5] tgt_time_steps:", tgt_time_steps)  # 25
             # Concatenate the current token embedding with output from previous time step (i.e. 'input feeding')
@@ -562,13 +562,13 @@ class LSTMDecoder(Seq2SeqDecoder):
                     rnn_layer(lstm_input, (tgt_hidden_states[layer_id], tgt_cell_states[layer_id]))  # lstm的三个input_vector
                 # 不断遍历更新: tgt_hidden_states[0]是全零, 之后再不断根据上一time_step更新; # 在本time_step实际只有一层,
                 # 说根据上一time_step更新, 是指外面那个j-loop;
-                # todo: 这里左边的 tgt_hidden_states, 是在本时刻, 在深度层次上, 比如, 根据第二层, 更新第三层.. 最终本time_step取最后一layer;
-                # todo: 但是在layer[0], 用的是上一time_step的layer[-1];
+                # TODO: 这里左边的 tgt_hidden_states, 是在本时刻, 在深度层次上, 比如, 根据第二层, 更新第三层.. 最终本time_step取最后一layer;
+                # TODO: 但是在layer[0], 用的是上一time_step的layer[-1];
 
                 # Current hidden state becomes input to the subsequent layer; apply dropout
                 lstm_input = F.dropout(tgt_hidden_states[layer_id], p=self.dropout_out, training=self.training)
-                # todo: 将当前的tgt_hidden_state作为下一个lstm_layer的input (指深度上的lstm(下一层), 不是序列上的"下一个");
-                # 更新的是每一层的tgt_hidden_states;
+                # TODO: 将当前的tgt_hidden_state作为下一个lstm_layer的input (指深度上的lstm(下一层), 不是序列上的"下一个");
+                # TODO: 更新的是每一层的tgt_hidden_states;
 
             '''
             ___QUESTION-1-DESCRIBE-E-START___
@@ -591,13 +591,14 @@ class LSTMDecoder(Seq2SeqDecoder):
                 assert 1 == 2
             else:
                 input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
-                # todo: 这里的tgt_hidden_states[-1], 表示的是前一时刻的tgt_hidden,
-                # todo: 为什么是前一时刻的? 因为要产生下一时刻的input_feed;
-                # todo: 前一时刻的attn, 前一时刻的
+                # TODO: 这里的tgt_hidden_states[-1], 表示的是前一时刻的tgt_hidden,
+                """已经经过了rnn_layer(), 这是已经更新过的 [tgt_hidden_states]"""
+                # TODO: 为什么是前一时刻的? 因为要产生下一时刻的input_feed;
+                # TODO: 前一时刻的attn, 前一时刻的
 
-                # todo: 为什么是previous?
-                # todo: 这里用到的是 [for layer_id] [循环]中的更新过的  tgt_hidden_states, 并且[-1]表示lstm最后一个layer
-                # todo: 所以我认为这个tgt_hidden_states是当前时刻的;
+                # TODO: 为什么是previous?
+                # TODO: 这里用到的是 [for layer_id] [循环]中的更新过的  tgt_hidden_states, 并且[-1]表示lstm最后一个layer
+                # TODO: 所以我认为这个tgt_hidden_states是当前时刻的;
 
                 # 如果attn是当前的, 则input_feed是当前的输出, 用于下一时刻的输入
 
@@ -620,7 +621,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                 # 填充attn_weights
 
                 # print("[size::input_feed-3]:", input_feed.size())  # torch.Size([10, 128])
-                # print("[size::step_attn_weights]:", step_attn_weights.size())  # todo: torch.Size([10, 22])
+                # print("[size::step_attn_weights]:", step_attn_weights.size())  # TODO: torch.Size([10, 22])
                 # 当前tgt_word对于[batch_size, len(words)](所有句子的所有单词)的 attn_weights. 为什么? (在decoder里怎么应用attention?)
                 # print("[size::attn_weights]:", attn_weights.size())
                 # torch.Size([10, 25, 22]), torch.Size([10, 22, 22]), torch.Size([10, 20, 22])
@@ -646,7 +647,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                     # TODO: --------------------------------------------------------------------- /CUT
 
             input_feed = F.dropout(input_feed, p=self.dropout_out, training=self.training)
-            rnn_outputs.append(input_feed)  # todo: 是本时刻的输出, 还是上一时刻的输出?
+            rnn_outputs.append(input_feed)  # TODO: 是本时刻的输出, 还是上一时刻的输出?
             # print("[test-13-3] rnn_output:", len(rnn_outputs))
             # 是用rnn_outputs来记录每个time_step的输出, 最后再合并 [√]
             # 从输出看到, 在每个time_step, 都记录了[time_step]次;
@@ -661,7 +662,7 @@ class LSTMDecoder(Seq2SeqDecoder):
         utils.set_incremental_state(
             self, incremental_state, 'cached_state', (tgt_hidden_states, tgt_cell_states, input_feed))
         # print(f"[test-13-6]: {type(incremental_state)}", incremental_state)  # NoneType, None
-        # todo: 根本就没用到?
+        # TODO: 根本就没用到?
 
         # Collect outputs across time steps
         decoder_output = torch.cat(rnn_outputs, dim=0).view(tgt_time_steps, batch_size, self.hidden_size)
