@@ -125,13 +125,18 @@ class TransformerEncoder(Seq2SeqEncoder):
         forward_state = forward_state.transpose(0, 1)
 
         # Compute padding mask for attention
+
         encoder_padding_mask = src_tokens.eq(self.padding_idx)
+        print(">>> self.padding_idx", self.padding_idx)  # 0
         if not encoder_padding_mask.any():
+            print("happen: if not encoder_padding_mask")
             encoder_padding_mask = None
 
         # Forward pass through each Transformer Encoder Layer
         for layer in self.layers:
             forward_state = layer(state=forward_state, encoder_padding_mask=encoder_padding_mask)
+
+        print("encoder_padding_mask:", encoder_padding_mask.size())
 
         return {
             "src_out": forward_state,   # [src_time_steps, batch_size, num_features]

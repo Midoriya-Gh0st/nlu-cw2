@@ -46,10 +46,10 @@ class TransformerEncoderLayer(nn.Module):
         # QKV: # torch.Size([11, 10, 128]) [src_time_steps, batch_size, embed_dim]
         # mask: NoneType
         state, _ = self.self_attn(query=state, key=state, value=state, key_padding_mask=encoder_padding_mask)
-        print("size::state-1:", state.size())
+        # print("size::state-1:", state.size())
         # torch.Size([11, 10, 128]), [src_time_steps, batch_size, encoder_hidden_state_dim]
         # TODO: 是encoder_embed_dim, 还是encoder_hidden_state;
-        input()
+        # input()
 
         '''
         ___QUESTION-6-DESCRIBE-D-END___
