@@ -636,7 +636,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                     # step_attn_weights = [batchsize, src_time_steps]
                     a_t_s = step_attn_weights.unsqueeze(1)
                     # a_t_s = [batchsize, 1, src_time_steps]
-                    f_t_l = tanh(torch.bmm(a_t_s,f_s))
+                    f_t_l = tanh(torch.bmm(a_t_s, f_s))
                     # f_t_l squeeze : [batchsize, 1, embed_dim]
                     f_t_l.squeeze(1)
                     # f_t_l squeeze : [batchsize, embed_dim]

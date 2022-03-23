@@ -1,0 +1,261 @@
+Commencing training!
+COMMAND: train.py --save-dir D:/aca-prj/nlu-cw2/results/baseline --log-file D:/aca-prj/nlu-cw2/results/baseline/log.out --data D:/aca-prj/nlu-cw2/europarl_prepared --encoder-num-layers 1 --decoder-num-layers 1
+Arguments: {'data': 'D:/aca-prj/nlu-cw2/europarl_prepared', 'source_lang': 'de', 'target_lang': 'en', 'max_tokens': None, 'batch_size': 10, 'train_on_tiny': False, 'arch': 'lstm', 'max_epoch': 100, 'clip_norm': 4.0, 'lr': 0.0003, 'patience': 10, 'log_file': 'D:/aca-prj/nlu-cw2/results/baseline/log.out', 'save_dir': 'D:/aca-prj/nlu-cw2/results/baseline', 'restore_file': 'checkpoint_last.pt', 'save_interval': 1, 'no_save': False, 'epoch_checkpoints': False, 'encoder_num_layers': 1, 'decoder_num_layers': 1, 'encoder_embed_dim': 64, 'encoder_embed_path': None, 'encoder_hidden_size': 64, 'encoder_bidirectional': 'True', 'encoder_dropout_in': 0.25, 'encoder_dropout_out': 0.25, 'decoder_embed_dim': 64, 'decoder_embed_path': None, 'decoder_hidden_size': 128, 'decoder_dropout_in': 0.25, 'decoder_dropout_out': 0.25, 'decoder_use_attention': 'True', 'decoder_use_lexical_model': 'False', 'device_id': 0}
+Loaded a source dictionary (de) with 5047 words
+Loaded a target dictionary (en) with 4420 words
+Built a model with 1456644 parameters
+Epoch 000: loss 5.625 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 14.44 | clip 0.982                                                 lip=0.982]
+Epoch 000: valid_loss 5.09 | num_tokens 13.8 | batch_size 500 | valid_perplexity 163
+Epoch 001: loss 5.056 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 15.32 | clip 1                                                  2, clip=1]
+Epoch 001: valid_loss 4.8 | num_tokens 13.8 | batch_size 500 | valid_perplexity 122
+Epoch 002: loss 4.787 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 15.69 | clip 1                                                  9, clip=1]
+Epoch 002: valid_loss 4.58 | num_tokens 13.8 | batch_size 500 | valid_perplexity 98
+Epoch 003: loss 4.582 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 15.9 | clip 1                                                  9, clip=1]
+Epoch 003: valid_loss 4.44 | num_tokens 13.8 | batch_size 500 | valid_perplexity 84.5
+Epoch 004: loss 4.428 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 16.21 | clip 1                                                  1, clip=1]
+Epoch 004: valid_loss 4.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 76
+Epoch 005: loss 4.308 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 16.35 | clip 1                                                  5, clip=1]
+Epoch 005: valid_loss 4.23 | num_tokens 13.8 | batch_size 500 | valid_perplexity 68.8
+Epoch 006: loss 4.206 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 16.54 | clip 1                                                  4, clip=1]
+Epoch 006: valid_loss 4.16 | num_tokens 13.8 | batch_size 500 | valid_perplexity 64.2
+Epoch 007: loss 4.115 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 16.71 | clip 1                                                  1, clip=1]
+Epoch 007: valid_loss 4.09 | num_tokens 13.8 | batch_size 500 | valid_perplexity 59.8
+Epoch 008: loss 4.033 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 16.89 | clip 1                                                  9, clip=1]
+Epoch 008: valid_loss 4.03 | num_tokens 13.8 | batch_size 500 | valid_perplexity 56.3
+Epoch 009: loss 3.963 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 16.99 | clip 1                                                  9, clip=1]
+Epoch 009: valid_loss 3.98 | num_tokens 13.8 | batch_size 500 | valid_perplexity 53.5
+Epoch 010: loss 3.895 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 17.24 | clip 1                                                  4, clip=1]
+Epoch 010: valid_loss 3.94 | num_tokens 13.8 | batch_size 500 | valid_perplexity 51.3
+Epoch 011: loss 3.834 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 17.51 | clip 1                                                 1, clip=1]
+Epoch 011: valid_loss 3.9 | num_tokens 13.8 | batch_size 500 | valid_perplexity 49.2
+Epoch 012: loss 3.779 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 17.81 | clip 1                                                  1, clip=1]
+Epoch 012: valid_loss 3.86 | num_tokens 13.8 | batch_size 500 | valid_perplexity 47.6
+Epoch 013: loss 3.727 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 18 | clip 1                                                  8, clip=1]
+Epoch 013: valid_loss 3.83 | num_tokens 13.8 | batch_size 500 | valid_perplexity 46
+Epoch 014: loss 3.675 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 18.18 | clip 1                                                  8, clip=1]
+Epoch 014: valid_loss 3.8 | num_tokens 13.8 | batch_size 500 | valid_perplexity 44.7
+Epoch 015: loss 3.629 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 18.44 | clip 1                                                  4, clip=1]
+Epoch 015: valid_loss 3.77 | num_tokens 13.8 | batch_size 500 | valid_perplexity 43.4
+Epoch 016: loss 3.587 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 18.73 | clip 1                                                  3, clip=1]
+Epoch 016: valid_loss 3.75 | num_tokens 13.8 | batch_size 500 | valid_perplexity 42.3
+Epoch 017: loss 3.545 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 18.94 | clip 1                                                  4, clip=1]
+Epoch 017: valid_loss 3.73 | num_tokens 13.8 | batch_size 500 | valid_perplexity 41.5
+Epoch 018: loss 3.504 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 19.12 | clip 1                                                 2, clip=1]
+Epoch 018: valid_loss 3.7 | num_tokens 13.8 | batch_size 500 | valid_perplexity 40.5
+Epoch 019: loss 3.466 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 19.37 | clip 1                                                 7, clip=1]
+Epoch 019: valid_loss 3.68 | num_tokens 13.8 | batch_size 500 | valid_perplexity 39.8
+Epoch 020: loss 3.429 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 19.48 | clip 1                                                 8, clip=1]
+Epoch 020: valid_loss 3.67 | num_tokens 13.8 | batch_size 500 | valid_perplexity 39.1
+Epoch 021: loss 3.391 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 19.83 | clip 1                                                 3, clip=1]
+Epoch 021: valid_loss 3.65 | num_tokens 13.8 | batch_size 500 | valid_perplexity 38.4
+Epoch 022: loss 3.356 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 20 | clip 1                                                 0, clip=1]
+Epoch 022: valid_loss 3.64 | num_tokens 13.8 | batch_size 500 | valid_perplexity 38
+Epoch 023: loss 3.323 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 20.21 | clip 1                                                 1, clip=1]
+Epoch 023: valid_loss 3.61 | num_tokens 13.8 | batch_size 500 | valid_perplexity 37.1
+Epoch 024: loss 3.292 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 20.48 | clip 1                                                 8, clip=1]
+Epoch 024: valid_loss 3.61 | num_tokens 13.8 | batch_size 500 | valid_perplexity 36.8
+Epoch 025: loss 3.26 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 20.7 | clip 1                                                 7, clip=1]
+Epoch 025: valid_loss 3.59 | num_tokens 13.8 | batch_size 500 | valid_perplexity 36.2
+Epoch 026: loss 3.235 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 20.9 | clip 1                                                  9, clip=1]
+Epoch 026: valid_loss 3.57 | num_tokens 13.8 | batch_size 500 | valid_perplexity 35.6
+Epoch 027: loss 3.199 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 21 | clip 1                                                 1, clip=1]
+Epoch 027: valid_loss 3.57 | num_tokens 13.8 | batch_size 500 | valid_perplexity 35.4
+Epoch 028: loss 3.175 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 21.23 | clip 1                                                  3, clip=1]
+Epoch 028: valid_loss 3.56 | num_tokens 13.8 | batch_size 500 | valid_perplexity 35
+Epoch 029: loss 3.148 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 21.49 | clip 1                                                 9, clip=1]
+Epoch 029: valid_loss 3.54 | num_tokens 13.8 | batch_size 500 | valid_perplexity 34.6
+Epoch 030: loss 3.124 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 21.66 | clip 1                                                  6, clip=1]
+Epoch 030: valid_loss 3.53 | num_tokens 13.8 | batch_size 500 | valid_perplexity 34.1
+Epoch 031: loss 3.092 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 21.82 | clip 1                                                 2, clip=1]
+Epoch 031: valid_loss 3.52 | num_tokens 13.8 | batch_size 500 | valid_perplexity 33.7
+Epoch 032: loss 3.072 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 21.96 | clip 1                                                  6, clip=1]
+Epoch 032: valid_loss 3.52 | num_tokens 13.8 | batch_size 500 | valid_perplexity 33.7
+Epoch 033: loss 3.048 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 22.13 | clip 1                                                 3, clip=1]
+Epoch 033: valid_loss 3.5 | num_tokens 13.8 | batch_size 500 | valid_perplexity 33.2
+Epoch 034: loss 3.024 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 22.34 | clip 1                                                 4, clip=1]
+Epoch 034: valid_loss 3.5 | num_tokens 13.8 | batch_size 500 | valid_perplexity 33.1
+Epoch 035: loss 2.995 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 22.53 | clip 1                                                 3, clip=1]
+Epoch 035: valid_loss 3.49 | num_tokens 13.8 | batch_size 500 | valid_perplexity 32.8
+Epoch 036: loss 2.973 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 22.76 | clip 1                                                  6, clip=1]
+Epoch 036: valid_loss 3.48 | num_tokens 13.8 | batch_size 500 | valid_perplexity 32.5
+Epoch 037: loss 2.951 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 22.93 | clip 1                                                  3, clip=1]
+Epoch 037: valid_loss 3.47 | num_tokens 13.8 | batch_size 500 | valid_perplexity 32.2
+Epoch 038: loss 2.93 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.12 | clip 1                                                  2, clip=1]
+Epoch 038: valid_loss 3.46 | num_tokens 13.8 | batch_size 500 | valid_perplexity 31.9
+Epoch 039: loss 2.909 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.26 | clip 1                                                 6, clip=1]
+Epoch 039: valid_loss 3.46 | num_tokens 13.8 | batch_size 500 | valid_perplexity 31.7
+Epoch 040: loss 2.892 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.44 | clip 1                                                 4, clip=1]
+Epoch 040: valid_loss 3.46 | num_tokens 13.8 | batch_size 500 | valid_perplexity 31.7
+Epoch 041: loss 2.867 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.57 | clip 1                                                 7, clip=1]
+Epoch 041: valid_loss 3.45 | num_tokens 13.8 | batch_size 500 | valid_perplexity 31.4
+Epoch 042: loss 2.849 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.67 | clip 0.999                                                 lip=0.999]
+Epoch 042: valid_loss 3.45 | num_tokens 13.8 | batch_size 500 | valid_perplexity 31.4
+Epoch 043: loss 2.828 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.91 | clip 1                                                 1, clip=1]
+Epoch 043: valid_loss 3.44 | num_tokens 13.8 | batch_size 500 | valid_perplexity 31.1
+Epoch 044: loss 2.809 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.97 | clip 1                                                 7, clip=1]
+Epoch 044: valid_loss 3.43 | num_tokens 13.8 | batch_size 500 | valid_perplexity 30.8
+Epoch 045: loss 2.795 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 24.25 | clip 0.999                                                 lip=0.999]
+Epoch 045: valid_loss 3.42 | num_tokens 13.8 | batch_size 500 | valid_perplexity 30.6
+Epoch 046: loss 2.773 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 24.41 | clip 1                                                 1, clip=1]
+Epoch 046: valid_loss 3.42 | num_tokens 13.8 | batch_size 500 | valid_perplexity 30.4
+Epoch 047: loss 2.752 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 24.42 | clip 1                                                 2, clip=1]
+Epoch 047: valid_loss 3.41 | num_tokens 13.8 | batch_size 500 | valid_perplexity 30.3
+Epoch 048: loss 2.734 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 24.63 | clip 1                                                 3, clip=1]
+Epoch 048: valid_loss 3.41 | num_tokens 13.8 | batch_size 500 | valid_perplexity 30.2
+Epoch 049: loss 2.72 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 24.78 | clip 0.999                                                 lip=0.999]
+Epoch 049: valid_loss 3.41 | num_tokens 13.8 | batch_size 500 | valid_perplexity 30.3
+Epoch 050: loss 2.702 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 24.92 | clip 1                                                  2, clip=1]
+Epoch 050: valid_loss 3.4 | num_tokens 13.8 | batch_size 500 | valid_perplexity 30
+Epoch 051: loss 2.686 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.08 | clip 1                                                 8, clip=1]
+Epoch 051: valid_loss 3.4 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.9
+Epoch 052: loss 2.669 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.17 | clip 1                                                  7, clip=1]
+Epoch 052: valid_loss 3.39 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.7
+Epoch 053: loss 2.652 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.37 | clip 1                                                  7, clip=1]
+Epoch 053: valid_loss 3.38 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.5
+Epoch 054: loss 2.638 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.59 | clip 1                                                  9, clip=1]
+Epoch 054: valid_loss 3.38 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.4
+Epoch 055: loss 2.621 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.63 | clip 1                                                  3, clip=1]
+Epoch 055: valid_loss 3.38 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.4
+Epoch 056: loss 2.608 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.73 | clip 1                                                 3, clip=1]
+Epoch 056: valid_loss 3.38 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.3
+Epoch 057: loss 2.591 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.95 | clip 1                                                  5, clip=1]
+Epoch 057: valid_loss 3.37 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.1
+Epoch 058: loss 2.581 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 25.94 | clip 1                                                  4, clip=1]
+Epoch 058: valid_loss 3.36 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.9
+Epoch 059: loss 2.567 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.06 | clip 0.999                                                  lip=0.999]
+Epoch 059: valid_loss 3.37 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29
+Epoch 060: loss 2.55 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.15 | clip 1                                                  5, clip=1]
+Epoch 060: valid_loss 3.36 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.7
+Epoch 061: loss 2.533 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.31 | clip 0.999                                                 lip=0.999]
+Epoch 061: valid_loss 3.35 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.6
+Epoch 062: loss 2.523 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.36 | clip 1                                                  6, clip=1]
+Epoch 062: valid_loss 3.36 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.8
+Epoch 063: loss 2.511 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.55 | clip 1                                                  5, clip=1]
+Epoch 063: valid_loss 3.36 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.8
+Epoch 064: loss 2.497 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.67 | clip 1                                                  7, clip=1]
+Epoch 064: valid_loss 3.35 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.4
+Epoch 065: loss 2.483 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.68 | clip 1                                                  8, clip=1]
+Epoch 065: valid_loss 3.34 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.2
+Epoch 066: loss 2.472 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.83 | clip 0.999                                                  lip=0.999]
+Epoch 066: valid_loss 3.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.1
+Epoch 067: loss 2.464 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.95 | clip 0.999                                                  lip=0.999]
+Epoch 067: valid_loss 3.34 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.1
+Epoch 068: loss 2.445 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.86 | clip 1                                                  6, clip=1]
+Epoch 068: valid_loss 3.34 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.2
+Epoch 069: loss 2.434 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 26.94 | clip 1                                                 4, clip=1]
+Epoch 069: valid_loss 3.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.1
+Epoch 070: loss 2.42 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.21 | clip 1                                                  1, clip=1]
+Epoch 070: valid_loss 3.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28.1
+Epoch 071: loss 2.403 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.2 | clip 1                                                  2, clip=1]
+Epoch 071: valid_loss 3.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28
+Epoch 072: loss 2.4 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.48 | clip 1                                                  8, clip=1]
+Epoch 072: valid_loss 3.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28
+Epoch 073: loss 2.39 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.61 | clip 1                                                  1, clip=1]
+Epoch 073: valid_loss 3.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 28
+Epoch 074: loss 2.372 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.57 | clip 0.999                                                  lip=0.999]
+Epoch 074: valid_loss 3.33 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.8
+Epoch 075: loss 2.366 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.74 | clip 1                                                  4, clip=1]
+Epoch 075: valid_loss 3.32 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.8
+Epoch 076: loss 2.357 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.71 | clip 0.999                                                 lip=0.999]
+Epoch 076: valid_loss 3.32 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.7
+Epoch 077: loss 2.346 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.9 | clip 1                                                  9, clip=1]
+Epoch 077: valid_loss 3.32 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.7
+Epoch 078: loss 2.333 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 27.88 | clip 1                                                  8, clip=1]
+Epoch 078: valid_loss 3.32 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.5
+Epoch 079: loss 2.322 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.02 | clip 0.999                                                  lip=0.999]
+Epoch 079: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.5
+Epoch 080: loss 2.315 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.05 | clip 1                                                  5, clip=1]
+Epoch 080: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.4
+Epoch 081: loss 2.301 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.09 | clip 0.999                                                  lip=0.999]
+Epoch 081: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.3
+Epoch 082: loss 2.293 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.29 | clip 1                                                  9, clip=1]
+Epoch 082: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.5
+Epoch 083: loss 2.282 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.3 | clip 1                                                  3, clip=1]
+Epoch 083: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.4
+Epoch 084: loss 2.272 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.24 | clip 1                                                  4, clip=1]
+Epoch 084: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.4
+Epoch 085: loss 2.264 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.48 | clip 0.998                                                  lip=0.998]
+Epoch 085: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.3
+Epoch 086: loss 2.252 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.48 | clip 1                                                 8, clip=1]
+Epoch 086: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.2
+Epoch 087: loss 2.239 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.66 | clip 1                                                  6, clip=1]
+Epoch 087: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.3
+Epoch 088: loss 2.235 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.66 | clip 1                                                  6, clip=1]
+Epoch 088: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.2
+Epoch 089: loss 2.225 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.52 | clip 1                                                  2, clip=1]
+Epoch 089: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.1
+Epoch 090: loss 2.217 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.63 | clip 1                                                  3, clip=1]
+Epoch 090: valid_loss 3.31 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.3
+Epoch 091: loss 2.206 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.74 | clip 1                                                 4, clip=1]
+Epoch 091: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.2
+Epoch 092: loss 2.201 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.83 | clip 1                                                  3, clip=1]
+Epoch 092: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.1
+Epoch 093: loss 2.193 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 29.02 | clip 0.999                                                  lip=0.999]
+Epoch 093: valid_loss 3.29 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27
+Epoch 094: loss 2.183 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 28.93 | clip 0.999                                                  lip=0.999]
+Epoch 094: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.2
+Epoch 095: loss 2.176 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 29.03 | clip 0.999                                                  lip=0.999]
+Epoch 095: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.2
+Epoch 096: loss 2.167 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 29.1 | clip 0.999                                                 lip=0.999]
+Epoch 096: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27.1
+Epoch 097: loss 2.154 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 29.02 | clip 1                                                  2, clip=1]
+Epoch 097: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27
+Epoch 098: loss 2.15 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 29.24 | clip 1                                                  4, clip=1]
+Epoch 098: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27
+Epoch 099: loss 2.142 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 29.46 | clip 1                                                  6, clip=1]
+Epoch 099: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27
+>>> initial encoder.
+1.bidirectional: True True
+en-self.num_layers: 1
+[test-02: self.embd]: <class 'torch.nn.modules.sparse.Embedding'>
+ Embedding(5047, 64, padding_idx=0)
+>>> train.py
+[args]: Namespace(arch='lstm', batch_size=10, clip_norm=4.0, data='D:/aca-prj/nlu-cw2/europarl_prepared', decoder_dropout_in=0.25, decoder_dropout_out=0.25, decoder_embed_dim=64, decoder_embed_path=None, decoder_hidden_size=128, decoder_num_layers=1, decoder_use_attention='True', decoder_use_lexical_model='False', device_id=0, encoder_bidirectional='True', encoder_dropout_in=0.25, encoder_dropout_out=0.25, encoder_embed_dim=64, encoder_embed_path=None, encoder_hidden_size=64, encoder_num_layers=1, epoch_checkpoints=False, log_file='D:/aca-prj/nlu-cw2/results/baseline/log.out', lr=0.0003, max_epoch=100, max_tokens=None, no_save=False, patience=10, restore_file='checkpoint_last.pt', save_dir='D:/aca-prj/nlu-cw2/results/baseline', save_interval=1, source_lang='de', target_lang='en', train_on_tiny=False)
+[2022-03-22 17:04:36] COMMAND: translate.py --checkpoint-path D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt --output D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt
+[2022-03-22 17:04:36] Arguments: {'cuda': False, 'seed': 42, 'data': 'D:/aca-prj/nlu-cw2/europarl_prepared', 'checkpoint_path': 'D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt', 'batch_size': 10, 'output': 'D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt', 'max_len': 25, 'source_lang': 'de', 'target_lang': 'en', 'max_tokens': None, 'train_on_tiny': False, 'arch': 'lstm', 'max_epoch': 100, 'clip_norm': 4.0, 'lr': 0.0003, 'patience': 10, 'log_file': 'D:/aca-prj/nlu-cw2/results/baseline/log.out', 'save_dir': 'D:/aca-prj/nlu-cw2/results/baseline', 'restore_file': 'checkpoint_last.pt', 'save_interval': 1, 'no_save': False, 'epoch_checkpoints': False, 'encoder_num_layers': 1, 'decoder_num_layers': 1, 'encoder_embed_dim': 64, 'encoder_embed_path': None, 'encoder_hidden_size': 64, 'encoder_bidirectional': 'True', 'encoder_dropout_in': 0.25, 'encoder_dropout_out': 0.25, 'decoder_embed_dim': 64, 'decoder_embed_path': None, 'decoder_hidden_size': 128, 'decoder_dropout_in': 0.25, 'decoder_dropout_out': 0.25, 'decoder_use_attention': 'True', 'decoder_use_lexical_model': 'False', 'device_id': 0}
+[2022-03-22 17:04:36] Loaded a source dictionary (de) with 5047 words
+[2022-03-22 17:04:36] Loaded a target dictionary (en) with 4420 words
+[2022-03-22 17:04:36] Loaded a model from checkpoint D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt
+[2022-03-22 17:04:44] Output 500 translations to D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt
+>>> in translate.py
+>>> initial encoder.
+1.bidirectional: True True
+en-self.num_layers: 1
+[test-02: self.embd]: <class 'torch.nn.modules.sparse.Embedding'>
+ Embedding(5047, 64, padding_idx=0)
+>>>>> translate.py
+[args:] Namespace(arch='lstm', batch_size=10, checkpoint_path='D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt', clip_norm=4.0, cuda=False, data='D:/aca-prj/nlu-cw2/europarl_prepared', decoder_dropout_in=0.25, decoder_dropout_out=0.25, decoder_embed_dim=64, decoder_embed_path=None, decoder_hidden_size=128, decoder_num_layers=1, decoder_use_attention='True', decoder_use_lexical_model='False', device_id=0, encoder_bidirectional='True', encoder_dropout_in=0.25, encoder_dropout_out=0.25, encoder_embed_dim=64, encoder_embed_path=None, encoder_hidden_size=64, encoder_num_layers=1, epoch_checkpoints=False, log_file='D:/aca-prj/nlu-cw2/results/baseline/log.out', lr=0.0003, max_epoch=100, max_len=25, max_tokens=None, no_save=False, output='D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt', patience=10, restore_file='checkpoint_last.pt', save_dir='D:/aca-prj/nlu-cw2/results/baseline', save_interval=1, seed=42, source_lang='de', target_lang='en', train_on_tiny=False)
+BLEU = 10.95, 40.3/14.0/6.7/3.8 (BP=1.000, ratio=1.010, hyp_len=6356, ref_len=6295)
+
+
+
+
+Commencing training!
+COMMAND: train.py --save-dir D:/aca-prj/nlu-cw2/results/baseline --log-file D:/aca-prj/nlu-cw2/results/baseline/log.out --data D:/aca-prj/nlu-cw2/europarl_prepared --encoder-num-layers 1 --decoder-num-layers 1
+Arguments: {'data': 'D:/aca-prj/nlu-cw2/europarl_prepared', 'source_lang': 'de', 'target_lang': 'en', 'max_tokens': None, 'batch_size': 10, 'train_on_tiny': False, 'arch': 'lstm', 'max_epoch': 100, 'clip_norm': 4.0, 'lr': 0.0003, 'patience': 10, 'log_file': 'D:/aca-prj/nlu-cw2/results/baseline/log.out', 'save_dir': 'D:/aca-prj/nlu-cw2/results/baseline', 'restore_file': 'checkpoint_last.pt', 'save_interval': 1, 'no_save': False, 'epoch_checkpoints': False, 'encoder_num_layers': 1, 'decoder_num_layers': 1, 'encoder_embed_dim': 64, 'encoder_embed_path': None, 'encoder_hidden_size': 64, 'encoder_bidirectional': 'True', 'encoder_dropout_in': 0.25, 'encoder_dropout_out': 0.25, 'decoder_embed_dim': 64, 'decoder_embed_path': None, 'decoder_hidden_size': 128, 'decoder_dropout_in': 0.25, 'decoder_dropout_out': 0.25, 'decoder_use_attention': 'True', 'decoder_use_lexical_model': 'False', 'device_id': 0}
+Loaded a source dictionary (de) with 5047 words
+Loaded a target dictionary (en) with 4420 words
+Built a model with 1456644 parameters
+Loaded checkpoint D:/aca-prj/nlu-cw2/results/baseline\checkpoint_last.pt
+>>> initial encoder.
+1.bidirectional: True True
+en-self.num_layers: 1
+[test-02: self.embd]: <class 'torch.nn.modules.sparse.Embedding'>
+ Embedding(5047, 64, padding_idx=0)
+>>> train.py
+[args]: Namespace(arch='lstm', batch_size=10, clip_norm=4.0, data='D:/aca-prj/nlu-cw2/europarl_prepared', decoder_dropout_in=0.25, decoder_dropout_out=0.25, decoder_embed_dim=64, decoder_embed_path=None, decoder_hidden_size=128, decoder_num_layers=1, decoder_use_attention='True', decoder_use_lexical_model='False', device_id=0, encoder_bidirectional='True', encoder_dropout_in=0.25, encoder_dropout_out=0.25, encoder_embed_dim=64, encoder_embed_path=None, encoder_hidden_size=64, encoder_num_layers=1, epoch_checkpoints=False, log_file='D:/aca-prj/nlu-cw2/results/baseline/log.out', lr=0.0003, max_epoch=100, max_tokens=None, no_save=False, patience=10, restore_file='checkpoint_last.pt', save_dir='D:/aca-prj/nlu-cw2/results/baseline', save_interval=1, source_lang='de', target_lang='en', train_on_tiny=False)
+[2022-03-22 17:14:07] COMMAND: translate.py --checkpoint-path D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt --output D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt
+[2022-03-22 17:14:07] Arguments: {'cuda': False, 'seed': 42, 'data': 'D:/aca-prj/nlu-cw2/europarl_prepared', 'checkpoint_path': 'D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt', 'batch_size': 10, 'output': 'D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt', 'max_len': 25, 'source_lang': 'de', 'target_lang': 'en', 'max_tokens': None, 'train_on_tiny': False, 'arch': 'lstm', 'max_epoch': 100, 'clip_norm': 4.0, 'lr': 0.0003, 'patience': 10, 'log_file': 'D:/aca-prj/nlu-cw2/results/baseline/log.out', 'save_dir': 'D:/aca-prj/nlu-cw2/results/baseline', 'restore_file': 'checkpoint_last.pt', 'save_interval': 1, 'no_save': False, 'epoch_checkpoints': False, 'encoder_num_layers': 1, 'decoder_num_layers': 1, 'encoder_embed_dim': 64, 'encoder_embed_path': None, 'encoder_hidden_size': 64, 'encoder_bidirectional': 'True', 'encoder_dropout_in': 0.25, 'encoder_dropout_out': 0.25, 'decoder_embed_dim': 64, 'decoder_embed_path': None, 'decoder_hidden_size': 128, 'decoder_dropout_in': 0.25, 'decoder_dropout_out': 0.25, 'decoder_use_attention': 'True', 'decoder_use_lexical_model': 'False', 'device_id': 0}
+[2022-03-22 17:14:07] Loaded a source dictionary (de) with 5047 words
+[2022-03-22 17:14:07] Loaded a target dictionary (en) with 4420 words
+[2022-03-22 17:14:07] Loaded a model from checkpoint D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt
+[2022-03-22 17:14:16] Output 500 translations to D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt
+>>> in translate.py
+>>> initial encoder.
+1.bidirectional: True True
+en-self.num_layers: 1
+[test-02: self.embd]: <class 'torch.nn.modules.sparse.Embedding'>
+ Embedding(5047, 64, padding_idx=0)
+>>>>> translate.py
+[args:] Namespace(arch='lstm', batch_size=10, checkpoint_path='D:/aca-prj/nlu-cw2/results/baseline/checkpoint_best.pt', clip_norm=4.0, cuda=False, data='D:/aca-prj/nlu-cw2/europarl_prepared', decoder_dropout_in=0.25, decoder_dropout_out=0.25, decoder_embed_dim=64, decoder_embed_path=None, decoder_hidden_size=128, decoder_num_layers=1, decoder_use_attention='True', decoder_use_lexical_model='False', device_id=0, encoder_bidirectional='True', encoder_dropout_in=0.25, encoder_dropout_out=0.25, encoder_embed_dim=64, encoder_embed_path=None, encoder_hidden_size=64, encoder_num_layers=1, epoch_checkpoints=False, log_file='D:/aca-prj/nlu-cw2/results/baseline/log.out', lr=0.0003, max_epoch=100, max_len=25, max_tokens=None, no_save=False, output='D:/aca-prj/nlu-cw2/results/baseline/model_translations.txt', patience=10, restore_file='checkpoint_last.pt', save_dir='D:/aca-prj/nlu-cw2/results/baseline', save_interval=1, seed=42, source_lang='de', target_lang='en', train_on_tiny=False)
+BLEU = 10.95, 40.3/14.0/6.7/3.8 (BP=1.000, ratio=1.010, hyp_len=6356, ref_len=6295)
