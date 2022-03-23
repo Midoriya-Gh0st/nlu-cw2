@@ -227,13 +227,49 @@ class MultiHeadAttention(nn.Module):
         # attn_weights is the combined output of h parallel heads of Attention(Q,K,V) in Vaswani et al. 2017
         # attn_weights must be size [num_heads, batch_size, tgt_time_steps, key.size(0)]
         # TODO: REPLACE THESE LINES WITH YOUR IMPLEMENTATION ------------------------ CUT
-        attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
-        # print("num_heads:", self.num_heads)
-        # print("self-k-embd-size:", self.k_embed_size)
-        # print("self.k:", key.size())  # torch.Size([11, 10, 128])
-        attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, key.size(0))) if need_weights else None
+        
+        # 1. Linear projection of Query, Key and Value
+        d_k = self.head_embed_size
+        q = self.q_proj(query)# torch.size(tgt_time_steps, batch_size, embed_dim)
+        k = self.k_proj(key)# torch.size(tgt_time_steps, batch_size, embed_dim)
+        v = self.v_proj(value)# torch.size(tgt_time_steps, batch_size, embed_dim)
 
 
+        # 2. Computing scaled dot-product attention for h attention heads.
+        Q = q.view(q.size(0), q.size(1), self.num_heads, d_k)
+        K = k.view(k.size(0), k.size(1), self.num_heads, d_k)
+        V = v.view(v.size(0), v.size(1), self.num_heads, d_k)
+        # reshape q,k,v into torch.size(tgt_time_steps, batch_size, num_heads, head_embed_dim)
+        # attn_weights must be [num_heads, batch_size, tgt_time_steps, key.size(0)]
+        # so we need to transpose Q, K, V
+        Q = Q.transpose(0,2)
+        K = K.transpose(0,2)
+        V = V.transpose(0,2)
+        # transpose Q, K, V into torch.size(num_heads, batch_size, tgt_time_steps, head_embed_dim)
+
+        # attn is a fixed size(tgt_time_steps, batch_size, embed_dim)
+        # for Q, K, V  tgt_time_steps is fixed, embed_dim is fixed as head_embed_dim
+        # so Q, K, V need to be reshaped into torch.size(tgt_time_step, batch_size, head_embed_dim)
+        Q = Q.view(self.num_heads*batch_size, -1, d_k)
+        K = K.view(self.num_heads*batch_size, -1, d_k)
+        V = V.view(self.num_heads*batch_size, -1, d_k)
+        # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
+        Q = Q.transpose(0,1)
+        K = K.transpose(0,1)
+        V = V.transpose(0,1)
+        # torch.size(tgt_time_steps, num_head * batch_size, head_embed_dim)
+
+        scaled_attn_weights = torch.bmm(Q,K.transpose(1,2)) / self.head_scaling
+        # torch.size(tgt_time_steps, num_head * batch_size, num_head * batch_size)       
+
+        attn_weights = F.softmax(scaled_attn_weights, dim=-1) # torch.size(tgt_time_steps, num_head * batch_size, num_head * batch_size)   
+        # apply softmax function
+        attn = torch.bmm(attn_weights,V) # torch.size(tgt_time_steps, num_head * batch_size, head_embed_dim)   
+        # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
+        #attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
+        #attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, -1)) if need_weights else None
+        
+        # 3. Concatenation of heads and output projection.
         # TODO: --------------------------------------------------------------------- CUT
 
         '''
