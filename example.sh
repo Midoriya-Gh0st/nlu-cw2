@@ -17,7 +17,7 @@ mkdir -p "${RESULTS_ROOT}"
 
 ### NAME YOUR EXPERIMENT HERE ##
 # EXP_NAME="baseline"
-EXP_NAME="q5_lexical_tiny"
+EXP_NAME="transformer"
 ################################
 
 ## Local variables for current experiment
@@ -29,6 +29,7 @@ FALSE="False"
 ENCODER_LAYERS_NUM="1"
 DECODER_LAYERS_NUM="1"
 LEXICAL='True'
+ARCH='transformer'
 
 mkdir -p ${EXP_ROOT}
 
@@ -36,7 +37,8 @@ mkdir -p ${EXP_ROOT}
 python train.py --save-dir "${EXP_ROOT}" \
                 --log-file "${EXP_ROOT}/log.out"  \
                 --data "${DATA_DIR}" \
-                --decoder-use-lexical-model "${LEXICAL}"
+                --arch "${ARCH}"
+                ### --decoder-use-lexical-model "${LEXICAL}" \
                 ### --encoder-num-layers "${ENCODER_LAYERS_NUM}" \ ###
                 ### --decoder-num-layers "${DECODER_LAYERS_NUM}" ###
                 ### --encoder-bidirectional "${FALSE}" ###
