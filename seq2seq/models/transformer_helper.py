@@ -32,9 +32,25 @@ class TransformerEncoderLayer(nn.Module):
         ___QUESTION-6-DESCRIBE-D-START___
         1.  Add tensor shape annotation to EVERY TENSOR below (NOT just the output tensor)
         2.  What is the purpose of encoder_padding_mask? 
+            - 一批次多个句子, 选取最长的句子的长度作为该批次每个句子的长度, 
+            - 使用encoder_padding_mask标记长度以给那些长度不足的句子补零;
+            - TODO: 这里是标记的[111100000]还是[0000011111]?
+            - 即: 标记的是有效位还是零位;
         3.  What will the output shape of `state' Tensor be after multi-head attention?
+            - 
         '''
+        # print("size::state-0,", state.size())  # torch.Size([11, 10, 128]) [src_time_steps, batch_size, embed_dim]
+        # print("size::encoder_padding_mask,", encoder_padding_mask.size())
+        # TODO: encoder_padding_mask=None, 虽然在tras.py定义了, 但是没有调用?
+
+        # QKV: # torch.Size([11, 10, 128]) [src_time_steps, batch_size, embed_dim]
+        # mask: NoneType
         state, _ = self.self_attn(query=state, key=state, value=state, key_padding_mask=encoder_padding_mask)
+        print("size::state-1:", state.size())
+        # torch.Size([11, 10, 128]), [src_time_steps, batch_size, encoder_hidden_state_dim]
+        # TODO: 是encoder_embed_dim, 还是encoder_hidden_state;
+        input()
+
         '''
         ___QUESTION-6-DESCRIBE-D-END___
         '''
@@ -212,7 +228,12 @@ class MultiHeadAttention(nn.Module):
         # attn_weights must be size [num_heads, batch_size, tgt_time_steps, key.size(0)]
         # TODO: REPLACE THESE LINES WITH YOUR IMPLEMENTATION ------------------------ CUT
         attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
-        attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, -1)) if need_weights else None
+        # print("num_heads:", self.num_heads)
+        # print("self-k-embd-size:", self.k_embed_size)
+        # print("self.k:", key.size())  # torch.Size([11, 10, 128])
+        attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, key.size(0))) if need_weights else None
+
+
         # TODO: --------------------------------------------------------------------- CUT
 
         '''
