@@ -1,4 +1,6 @@
 from cmath import tanh
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -441,7 +443,12 @@ class LSTMDecoder(Seq2SeqDecoder):
             # __QUESTION-5: Add parts of decoder architecture corresponding to the LEXICAL MODEL here
             # TODO: --------------------------------------------------------------------- CUT
             self.ffnn = nn.Linear(embed_dim, embed_dim, bias=False)
+            # one-hidden-layer FFNN with skip connections
+            # TODO: feed-forward layers used to project the
+            #       weighted sum of source language embeddings
             self.predictoutput = nn.Linear(embed_dim, len(dictionary), bias=True)
+            # TODO: 用于根据hidden_state产生实际输出(概率?)
+
             # TODO: --------------------------------------------------------------------- /CUT
 
     def forward(self, tgt_inputs, encoder_out, incremental_state=None):
@@ -629,25 +636,34 @@ class LSTMDecoder(Seq2SeqDecoder):
                 if self.use_lexical_model:
                     # __QUESTION-5: Compute and collect LEXICAL MODEL context vectors here
                     # TODO: --------------------------------------------------------------------- CUT
-                    
-                    # src_embeddings = [src_time_steps,batchsize,embed_dim]
+                    # src_embeddings = [src_time_steps, batch_size, embed_dim]
                     f_s = torch.transpose(src_embeddings, 0, 1)
-                    # f_s = [batchsize, src_time_steps,embed_dim]
-                    # step_attn_weights = [batchsize, src_time_steps]
-                    a_t_s = step_attn_weights.unsqueeze(1)
-                    # a_t_s = [batchsize, 1, src_time_steps]
-                    f_t_l = tanh(torch.bmm(a_t_s, f_s))
-                    # f_t_l squeeze : [batchsize, 1, embed_dim]
-                    f_t_l.squeeze(1)
-                    # f_t_l squeeze : [batchsize, embed_dim]
-                    # self.ffnn : [embed_dim, embed_dim]
-                    h_t_l = torch.tanh(self.ffnn(f_t_l)) + f_t_l
+                    # f_s = [batch_size, src_time_steps, embed_dim]
 
-                    lexical_contexts.append(h_t_l)
+                    # step_attn_weights = [batch_size, src_time_steps]
+                    a_t_s = step_attn_weights.unsqueeze(1)
+                    # a_t_s = [batch_size, 1, src_time_steps]
+                    # TODO: step_attn_weights, 里面的每一行都是step_attn_weight [tgt_word关于单个src_word]?
+
+                    # TODO: l - 表示什么?
+                    f_t_l = torch.tanh(torch.bmm(a_t_s, f_s))  # 这里应该使用torch.tanh, 不是纯tanh;  # 这里是矩阵做乘, 不用求sum了吗?
+                    # f_t_l : [batch_size, 1, embed_dim]
+                    # = bmm([batch_size, 1, src_time_steps], [batch_size, src_time_steps, embed_dim])
+                    # = [batch_size, 1, embed_dim]
+
+                    f_t_l.squeeze(1)
+                    # f_t_l squeeze : [batch_size, embed_dim]
+
+                    # self.ffnn : [embed_dim, embed_dim]  TODO: self.ffnn的size是怎么计算的?
+                    h_t_l = torch.tanh(self.ffnn(f_t_l)) + f_t_l  # use a one-hidden-layer FFNN with skip connections
+                    # TODO: h_t_l: [10(batch_size), 128(embed_dim)]  # 还用x2吗? 还要写 +f_t_l的维度吗?
+                    # TODO: input(10, 128) * linear(128, 128) => output(10, 128)
+
+                    lexical_contexts.append(h_t_l)  # collect the lexical_context;
                     # TODO: --------------------------------------------------------------------- /CUT
 
             input_feed = F.dropout(input_feed, p=self.dropout_out, training=self.training)
-            rnn_outputs.append(input_feed)  # TODO: 是本时刻的输出, 还是上一时刻的输出?
+            rnn_outputs.append(input_feed)  # TODO: 是本时刻的输出, 还是上一时刻的输出? [本刻的输出, 下一时刻的输入, 所以叫做previous hidden;
             # print("[test-13-3] rnn_output:", len(rnn_outputs))
             # 是用rnn_outputs来记录每个time_step的输出, 最后再合并 [√]
             # 从输出看到, 在每个time_step, 都记录了[time_step]次;
@@ -683,11 +699,18 @@ class LSTMDecoder(Seq2SeqDecoder):
         if self.use_lexical_model:
             # __QUESTION-5: Incorporate the LEXICAL MODEL into the prediction of target tokens here
             # TODO: --------------------------------------------------------------------- CUT
-            pass
+            # pass
             # lexical_contexts: [tgt_time_steps, batch_size, num_features]
-            predict_input = torch.Tensor(lexical_contexts).transpose(0,1)
-            decoder_output = self.predictoutput(predict_input)+decoder_output
+            final_tensor = torch.stack(lexical_contexts, 0)
+            # print("[test-50] lexical-context")
+            # print("lexical size:", len(lexical_contexts), lexical_contexts[-1].size())
+            # print("size::final_tensor", final_tensor.size())  # torch.Size([26, 10, 1, 64])
+            predict_input = torch.Tensor(final_tensor).transpose(0, 1).squeeze()  # ([10, 26, 1, 4420]) => ([10, 26, 4420])
 
+            # decoder_out: ([10, 26, 4420])
+            decoder_output = self.predictoutput(predict_input) + decoder_output
+            # TODO: 这个公式从哪来, b_o是表示bias吗, 所以不需要, 这里是(wo * ht) + (w_l * h_t_l), 其中(wo * ht)表示原来的decoder_output?
+            # input(10, 128) * projection(128, V_len) => output(10, V_len), 表示对于10个句子的, prob_dist, (但现在还没有softmax).
             # TODO: --------------------------------------------------------------------- /CUT
         # assert 1 == 2
         return decoder_output, attn_weights

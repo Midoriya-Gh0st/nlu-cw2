@@ -16,7 +16,8 @@ RESULTS_ROOT="${ROOT}/results"
 mkdir -p "${RESULTS_ROOT}"
 
 ### NAME YOUR EXPERIMENT HERE ##
-EXP_NAME="baseline"
+# EXP_NAME="baseline"
+EXP_NAME="q5_lexical_tiny"
 ################################
 
 ## Local variables for current experiment
@@ -25,12 +26,20 @@ DATA_DIR="${ROOT}/europarl_prepared"
 TEST_EN_GOLD="${ROOT}/europarl_raw/test.en"
 TEST_EN_PRED="${EXP_ROOT}/model_translations.txt"
 FALSE="False"
+ENCODER_LAYERS_NUM="1"
+DECODER_LAYERS_NUM="1"
+LEXICAL='True'
+
 mkdir -p ${EXP_ROOT}
 
 # Train model. Defaults are used for any argument not specified here. Use "\" to add arguments over multiple lines.
 python train.py --save-dir "${EXP_ROOT}" \
                 --log-file "${EXP_ROOT}/log.out"  \
                 --data "${DATA_DIR}" \
+                --train-on-tiny \
+                --decoder-use-lexical-model "${LEXICAL}"
+                ### --encoder-num-layers "${ENCODER_LAYERS_NUM}" \ ###
+                ### --decoder-num-layers "${DECODER_LAYERS_NUM}" ###
                 ### --encoder-bidirectional "${FALSE}" ###
                 ### ADDITIONAL ARGUMENTS HERE ###
 
