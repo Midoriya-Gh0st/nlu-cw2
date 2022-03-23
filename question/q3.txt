@@ -1,0 +1,31 @@
+1. Currently, the model uses greedy decoding, which simply chooses the maximumprobability token at each time step. Can you explain why this might be problematic? Give language specific examples as part of your answer.
+
+Answer:  The greedy decoding will be problematic because it will only choose the output word with the highest probability instead of the most appropriate one. For example, if I want to translate a Germany sentence which means 'I would like to buy an apple' into English. Two probable choice is:
+(a) I would like to eat an apple. (b) I would like to get an apple. If we have the probability from previous steps:
+P(eat| I, would, like, to) > P(get| I, would, like, to)
+The decoder will choose 'eat' as the output at current timestep. The greedy decoding will only guarantee the output of each timestep is optimal, it will not help make the whole output sequence optimal because it does not consider the output at later timesteps.
+Another problem arised from this is that the decoder will choose the same output when given the same output sequence. Under the circumstance given above, the decoder will also choose 'eat' as the input even the next word is 'a car'.
+
+
+2. How would you modify this decoder to do beam search - that is, to consider
+multiple possible translations at each time step. Your answer should be formulates
+as pseudo codes. You don’t need to actually implement beam search – pseudo
+codes will be enough. The purpose of this question is simply for you to think
+through and list the important steps that is requires for beam search. Use math
+equations and textual explanations together to illustrate your idea.
+
+let beam_width = b which means we need the first bth words, Prev be the previous word sequence, targ be the target word with a size of the length of vocabulary, input be the input sequence
+First we need to compute the probability of the target word in the vocabulary given previous words and the input
+P(targ | Prev, input)
+the probability P is a matrix with vocabulary size and beam_width because we need to find previous sequences with the first bth highest probabilities.
+So at each time step, we can get the current output sequence probability given the input sequence:
+P(Prev, targ | input) = P(targ | Prev, input) P(Prev | input)
+the size of it is the same as the probability above, because we need to get only the first bth output sequence at each timestep.
+pseudo code:
+i. current prob, current state = decoder(previous word, previous state) # use
+the decode to generate the probability of all word at current step, the current prob equals to P()
+ii. current prob.sort() # sort the probability from max to min
+iii. beams = current prob(:beam width).index() # get the first beam_width highest probabilities and return the words
+iv. previous word = previous word+beams # Prev, we get b pieces of probable sequences
+v. previous state = current state
+vi. for each sequence in previous word, compute the next b words in the next loop

@@ -83,6 +83,7 @@ def main(args):
             _, next_candidates = torch.topk(decoder_out, 2, dim=-1)
             best_candidates = next_candidates[:, :, 0]
             backoff_candidates = next_candidates[:, :, 1]
+            # if the best candidate is unk then choose the backoff candidate
             next_words = torch.where(best_candidates == tgt_dict.unk_idx, backoff_candidates, best_candidates)
             prev_words = torch.cat([go_slice, next_words], dim=1)
 
