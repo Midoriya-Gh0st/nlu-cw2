@@ -227,6 +227,7 @@ class TransformerDecoder(Seq2SeqDecoder):
                 - Incremental decoding is a special mode at inference time where the Model only receives a single time-step of 
                   input corresponding to the previous output token (for teacher forcing) and must produce the next output *incrementally*. 
                 - https://fairseq.readthedocs.io/en/latest/_modules/fairseq/models/fairseq_incremental_decoder.html
+                - https://github.com/pytorch/fairseq/issues/1003
             '''
             # TODO: incremental decoding
             self_attn_mask = self.buffered_future_mask(forward_state) if incremental_state is None else None

@@ -267,7 +267,7 @@ class MultiHeadAttention(nn.Module):
         V = V.contiguous().view(self.num_heads*batch_size, -1, d_k)
         # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
 
-        scaled_attn_weights = torch.bmm(Q,K.transpose(1, 2)) / self.head_scaling
+        scaled_attn_weights = torch.bmm(Q, K.transpose(1, 2)) / self.head_scaling
         # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)       
 
         attn_weights = F.softmax(scaled_attn_weights, dim=-1)  # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
