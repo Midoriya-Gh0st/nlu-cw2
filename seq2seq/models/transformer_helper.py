@@ -266,7 +266,7 @@ class MultiHeadAttention(nn.Module):
         V = V.contiguous().view(self.num_heads*batch_size, -1, d_k)
         # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
 
-        scaled_attn_weights = torch.bmm(Q,K.transpose(1, 2)) / self.head_scaling
+        scaled_attn_weights = torch.bmm(Q, K.transpose(1, 2)) / self.head_scaling
         # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)       
         if key_padding_mask is not None:
             key_padding_mask = key_padding_mask.unsqueeze(dim=1).repeat(self.num_heads,1,1)# generate key_padding_masks for each heads
