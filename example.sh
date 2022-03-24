@@ -38,7 +38,7 @@ python train.py --save-dir "${EXP_ROOT}" \
                 --log-file "${EXP_ROOT}/log.out"  \
                 --data "${DATA_DIR}" \
                 --arch "${ARCH}" \
-                --train-on-tiny
+                ### --train-on-tiny
                 ### --decoder-use-lexical-model "${LEXICAL}" \
                 ### --encoder-num-layers "${ENCODER_LAYERS_NUM}" \ ###
                 ### --decoder-num-layers "${DECODER_LAYERS_NUM}" ###
