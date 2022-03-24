@@ -254,22 +254,37 @@ class MultiHeadAttention(nn.Module):
         K = K.view(self.num_heads*batch_size, -1, d_k)
         V = V.view(self.num_heads*batch_size, -1, d_k)
         # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
-        Q = Q.transpose(0,1)
-        K = K.transpose(0,1)
-        V = V.transpose(0,1)
-        # torch.size(tgt_time_steps, num_head * batch_size, head_embed_dim)
 
         scaled_attn_weights = torch.bmm(Q,K.transpose(1,2)) / self.head_scaling
-        # torch.size(tgt_time_steps, num_head * batch_size, num_head * batch_size)       
+        # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)       
 
-        attn_weights = F.softmax(scaled_attn_weights, dim=-1) # torch.size(tgt_time_steps, num_head * batch_size, num_head * batch_size)   
+        attn_weights = F.softmax(scaled_attn_weights, dim=-1) # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)   
         # apply softmax function
-        attn = torch.bmm(attn_weights,V) # torch.size(tgt_time_steps, num_head * batch_size, head_embed_dim)   
-        # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
+        attn = torch.bmm(attn_weights,V)  # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)     
+
         #attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
         #attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, -1)) if need_weights else None
         
         # 3. Concatenation of heads and output projection.
+        # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
+        # but now it is torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
+        # so we need to convert it into torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
+        attn = attn.view(self.num_heads, batch_size, -1, self.head_embed_size) # torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
+        # then transpose it
+        attn = attn.transpose(0,2) # torch.size(tgt_time_steps, batch_size, num_head, head_embed_dim)
+        # at lastm, reshape attn
+        attn = attn.view(-1, batch_size, self.head_embed_size)
+        # output projection
+        attn = self.out_proj(attn)
+
+        # the shape of attn_weights we need is torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
+        # it is now torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
+        # so we can reshape it directly
+        attn_weights = attn_weights.view(self.num_heads, batch_size, tgt_time_steps, -1)# torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
+        if need_weights:
+            attn_weights = attn_weights
+        else:
+            attn_weights = None
         # TODO: --------------------------------------------------------------------- CUT
 
         '''
