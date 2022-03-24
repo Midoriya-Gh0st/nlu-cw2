@@ -125,12 +125,12 @@ class TransformerEncoder(Seq2SeqEncoder):
         forward_state = forward_state.transpose(0, 1)
 
         # Compute padding mask for attention
-        print(">>> src_tokens", src_tokens)
+        # print(">>> src_tokens", src_tokens)
         encoder_padding_mask = src_tokens.eq(self.padding_idx)
         # print(">>> self.padding_idx", self.padding_idx)  # 0
         # print(">>> encoder_padding_mask", encoder_padding_mask)  # 0
         if not encoder_padding_mask.any():
-            print("happen: if not encoder_padding_mask")
+            # print("happen: if not encoder_padding_mask")
             encoder_padding_mask = None
 
         # print("encoder_padding_mask:", encoder_padding_mask.size())  # torch.Size([10, 11])
@@ -267,10 +267,10 @@ class TransformerDecoder(Seq2SeqDecoder):
             4.  What would the output represent if features_only=True?
                 - 不执行linear....., 直接输出decoder_output;
             '''
-            print("size::forward_state-0:", forward_state.size())
+            # print("size::forward_state-0:", forward_state.size())
             # [10, 11, 128]
             forward_state = self.embed_out(forward_state)
-            print("size::forward_state-1:", forward_state.size())
+            # print("size::forward_state-1:", forward_state.size())
             # [10, 11, 4420]  # target_dictionary_len
             '''
             ___QUESTION-6-DESCRIBE-C-END___
