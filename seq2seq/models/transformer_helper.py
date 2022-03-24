@@ -133,6 +133,7 @@ class TransformerDecoderLayer(nn.Module):
         2.  How does encoder attention differ from self attention? 
         3.  What is the difference between key_padding_mask and attn_mask? 
         4.  If you understand this difference, then why don't we need to give attn_mask here?
+        when we predict the first word, 
         '''
         state, attn = self.encoder_attn(query=state,
                                         key=encoder_out,
@@ -260,6 +261,10 @@ class MultiHeadAttention(nn.Module):
 
         attn_weights = F.softmax(scaled_attn_weights, dim=-1) # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)   
         # apply softmax function
+
+        attn_weights = torch.dropout(attn_weights, p=self.dropout, training=self.training)
+        # !!!optional!!! apply dropout function
+
         attn = torch.bmm(attn_weights,V)  # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)     
 
         #attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
