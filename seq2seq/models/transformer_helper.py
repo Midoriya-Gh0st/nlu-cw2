@@ -243,10 +243,9 @@ class MultiHeadAttention(nn.Module):
         
         # 1. Linear projection of Query, Key and Value
         d_k = self.head_embed_size
-        q = self.q_proj(query)# torch.size(tgt_time_steps, batch_size, embed_dim)
-        k = self.k_proj(key)# torch.size(tgt_time_steps, batch_size, embed_dim)
-        v = self.v_proj(value)# torch.size(tgt_time_steps, batch_size, embed_dim)
-
+        q = self.q_proj(query)  # torch.size(tgt_time_steps, batch_size, embed_dim)
+        k = self.k_proj(key)  # torch.size(tgt_time_steps, batch_size, embed_dim)
+        v = self.v_proj(value)  # torch.size(tgt_time_steps, batch_size, embed_dim)
 
         # 2. Computing scaled dot-product attention for h attention heads.
         Q = q.view(q.size(0), q.size(1), self.num_heads, d_k)
@@ -255,9 +254,9 @@ class MultiHeadAttention(nn.Module):
         # reshape q,k,v into torch.size(tgt_time_steps, batch_size, num_heads, head_embed_dim)
         # attn_weights must be [num_heads, batch_size, tgt_time_steps, key.size(0)]
         # so we need to transpose Q, K, V
-        Q = Q.transpose(0,2)
-        K = K.transpose(0,2)
-        V = V.transpose(0,2)
+        Q = Q.transpose(0, 2)
+        K = K.transpose(0, 2)
+        V = V.transpose(0, 2)
         # transpose Q, K, V into torch.size(num_heads, batch_size, tgt_time_steps, head_embed_dim)
 
         # attn is a fixed size(tgt_time_steps, batch_size, embed_dim)
@@ -268,7 +267,7 @@ class MultiHeadAttention(nn.Module):
         V = V.view(self.num_heads*batch_size, -1, d_k)
         # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
 
-        scaled_attn_weights = torch.bmm(Q,K.transpose(1,2)) / self.head_scaling
+        scaled_attn_weights = torch.bmm(Q,K.transpose(1, 2)) / self.head_scaling
         # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)       
 
         attn_weights = F.softmax(scaled_attn_weights, dim=-1) # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)   
