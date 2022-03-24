@@ -145,6 +145,7 @@ class TransformerDecoderLayer(nn.Module):
                  --- self_attn_a = f(a-[b,c,d,e,]), self_attn_b = f(b-[a,c,d,e,]) ... 
                  --- 这会产生 [句内, 词间]的影响;
                  --- 因此self_attn需要mask; 
+        when we predict the first word, 
         '''
         state, attn = self.encoder_attn(query=state,
                                         key=encoder_out,
@@ -272,6 +273,10 @@ class MultiHeadAttention(nn.Module):
 
         attn_weights = F.softmax(scaled_attn_weights, dim=-1) # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)   
         # apply softmax function
+
+        attn_weights = torch.dropout(attn_weights, p=self.dropout, training=self.training)
+        # !!!optional!!! apply dropout function
+
         attn = torch.bmm(attn_weights,V)  # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)     
 
         #attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
