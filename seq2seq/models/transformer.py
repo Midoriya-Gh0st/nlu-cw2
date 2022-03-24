@@ -186,7 +186,7 @@ class TransformerDecoder(Seq2SeqDecoder):
         # Embed positions
         positions = self.embed_positions(tgt_inputs, incremental_state=incremental_state)
 
-        print("inc_state:", incremental_state)
+        # print("inc_state:", incremental_state)
 
         # Incremental decoding only needs the single previous token
         if incremental_state is not None:

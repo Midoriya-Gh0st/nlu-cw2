@@ -131,8 +131,20 @@ class TransformerDecoderLayer(nn.Module):
         ___QUESTION-6-DESCRIBE-E-START___
         1.  Add tensor shape annotation to EVERY TENSOR below (NOT just the output tensor)
         2.  How does encoder attention differ from self attention? 
+            - 结合图来讲, encoder-attn是en-de之间, self是只在en或者只在de的 彼此之间;
         3.  What is the difference between key_padding_mask and attn_mask? 
+            - key_padding_mask是用来mask一个input_sent之于一个batch内最长的那个句子的的padding, 即: [11111000]
+            - attn_mask: self_attn_mask, 防止生成tgt_2的时候, 被tgt_5的影响, 所以先把curren_tgt后面的给mask掉;
         4.  If you understand this difference, then why don't we need to give attn_mask here?
+            - [6b] self_attn_mask;
+            - [6e] encoder-decoder_attn_mask [不需要];
+            - 这里的attn_mask是encoder-decoder attn_mask, 不包含decoder中tgt_words之间的上下文信息(句内影响);
+              -- 即: attn_a = f(a-[1,2,3,4,5]), attn_b = f(b-[1,2,3,4,5]);
+              -- attn_a和attn_b之间不会产生影响, 所以不需要使用;
+              -- 而在transformer.py里面, 是self_attn_mask, 是关于: 
+                 --- self_attn_a = f(a-[b,c,d,e,]), self_attn_b = f(b-[a,c,d,e,]) ... 
+                 --- 这会产生 [句内, 词间]的影响;
+                 --- 因此self_attn需要mask; 
         '''
         state, attn = self.encoder_attn(query=state,
                                         key=encoder_out,
