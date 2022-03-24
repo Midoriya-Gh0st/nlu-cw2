@@ -270,16 +270,16 @@ class MultiHeadAttention(nn.Module):
         scaled_attn_weights = torch.bmm(Q,K.transpose(1, 2)) / self.head_scaling
         # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)       
 
-        attn_weights = F.softmax(scaled_attn_weights, dim=-1) # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)   
+        attn_weights = F.softmax(scaled_attn_weights, dim=-1)  # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
         # apply softmax function
 
-        attn_weights = torch.dropout(attn_weights, p=self.dropout, training=self.training)
+        attn_weights = torch.dropout(attn_weights, p=self.attention_dropout, train=self.training)
         # !!!optional!!! apply dropout function
 
-        attn = torch.bmm(attn_weights,V)  # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)     
+        attn = torch.bmm(attn_weights, V)  # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
 
-        #attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
-        #attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, -1)) if need_weights else None
+        # attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
+        # attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, -1)) if need_weights else None
         
         # 3. Concatenation of heads and output projection.
         # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
@@ -296,7 +296,7 @@ class MultiHeadAttention(nn.Module):
         # the shape of attn_weights we need is torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
         # it is now torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
         # so we can reshape it directly
-        attn_weights = attn_weights.contiguous().view(self.num_heads, batch_size, tgt_time_steps, -1)# torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
+        attn_weights = attn_weights.contiguous().view(self.num_heads, batch_size, tgt_time_steps, -1)  # torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
         if need_weights:
             attn_weights = attn_weights
         else:
