@@ -285,11 +285,11 @@ class MultiHeadAttention(nn.Module):
         # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
         # but now it is torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
         # so we need to convert it into torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
-        attn = attn.contiguous().view(self.num_heads, batch_size, -1, self.head_embed_size) # torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
+        attn = attn.contiguous().view(self.num_heads, batch_size, -1, self.head_embed_size)  # torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
         # then transpose it
-        attn = attn.transpose(0,2) # torch.size(tgt_time_steps, batch_size, num_head, head_embed_dim)
+        attn = attn.transpose(0, 2)  # torch.size(tgt_time_steps, batch_size, num_head, head_embed_dim)
         # at lastm, reshape attn
-        attn = attn.contiguous().view(-1, batch_size, self.head_embed_size)
+        attn = attn.contiguous().view(-1, batch_size, self.head_embed_size * self.num_heads)
         # output projection
         attn = self.out_proj(attn)
 
