@@ -249,9 +249,9 @@ class MultiHeadAttention(nn.Module):
 
 
         # 2. Computing scaled dot-product attention for h attention heads.
-        Q = q.view(q.size(0), q.size(1), self.num_heads, d_k)
-        K = k.view(k.size(0), k.size(1), self.num_heads, d_k)
-        V = v.view(v.size(0), v.size(1), self.num_heads, d_k)
+        Q = q.contiguous().view(q.size(0), q.size(1), self.num_heads, d_k)
+        K = k.contiguous().view(k.size(0), k.size(1), self.num_heads, d_k)
+        V = v.contiguous().view(v.size(0), v.size(1), self.num_heads, d_k)
         # reshape q,k,v into torch.size(tgt_time_steps, batch_size, num_heads, head_embed_dim)
         # attn_weights must be [num_heads, batch_size, tgt_time_steps, key.size(0)]
         # so we need to transpose Q, K, V
@@ -263,9 +263,9 @@ class MultiHeadAttention(nn.Module):
         # attn is a fixed size(tgt_time_steps, batch_size, embed_dim)
         # for Q, K, V  tgt_time_steps is fixed, embed_dim is fixed as head_embed_dim
         # so Q, K, V need to be reshaped into torch.size(tgt_time_step, batch_size, head_embed_dim)
-        Q = Q.view(self.num_heads*batch_size, -1, d_k)
-        K = K.view(self.num_heads*batch_size, -1, d_k)
-        V = V.view(self.num_heads*batch_size, -1, d_k)
+        Q = Q.contiguous().view(self.num_heads*batch_size, -1, d_k)
+        K = K.contiguous().view(self.num_heads*batch_size, -1, d_k)
+        V = V.contiguous().view(self.num_heads*batch_size, -1, d_k)
         # torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
 
         scaled_attn_weights = torch.bmm(Q,K.transpose(1,2)) / self.head_scaling
@@ -286,18 +286,18 @@ class MultiHeadAttention(nn.Module):
         # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
         # but now it is torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
         # so we need to convert it into torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
-        attn = attn.view(self.num_heads, batch_size, -1, self.head_embed_size) # torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
+        attn = attn.contiguous().view(self.num_heads, batch_size, -1, self.head_embed_size) # torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
         # then transpose it
         attn = attn.transpose(0,2) # torch.size(tgt_time_steps, batch_size, num_head, head_embed_dim)
         # at lastm, reshape attn
-        attn = attn.view(-1, batch_size, self.head_embed_size)
+        attn = attn.contiguous().view(-1, batch_size, self.head_embed_size)
         # output projection
         attn = self.out_proj(attn)
 
         # the shape of attn_weights we need is torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
         # it is now torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
         # so we can reshape it directly
-        attn_weights = attn_weights.view(self.num_heads, batch_size, tgt_time_steps, -1)# torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
+        attn_weights = attn_weights.contiguous().view(self.num_heads, batch_size, tgt_time_steps, -1)# torch.size(self.num_heads, batch_size, tgt_time_steps, -1)
         if need_weights:
             attn_weights = attn_weights
         else:
@@ -325,7 +325,7 @@ class PositionalEmbedding(nn.Module):
         emb = math.log(10000) / (half_dim - 1)
         emb = torch.exp(torch.arange(half_dim, dtype=torch.float) * -emb)
         emb = torch.arange(num_embeddings, dtype=torch.float).unsqueeze(1) * emb.unsqueeze(0)
-        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1).view(num_embeddings, -1)
+        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1).contiguous().view(num_embeddings, -1)
         if embed_dim % 2 == 1:
             # Zero pad in specific mismatch case
             emb = torch.cat([emb, torch.zeros(num_embeddings, 1)], dim=1)
@@ -344,7 +344,7 @@ class PositionalEmbedding(nn.Module):
 
         if incremental_state is not None:
             #   Positional embed is identical for all tokens during single step decoding
-            pos = timestep.view(-1)[0] + 1 if timestep is not None else seq_len
+            pos = timestep.contiguous().view(-1)[0] + 1 if timestep is not None else seq_len
             return self.weights.index_select(index=self.padding_idx + pos, dim=0).unsqueeze(1).repeat(batch_size, 1, 1)
 
         # Replace non-padding symbols with position numbers from padding_idx+1 onwards.
@@ -352,7 +352,7 @@ class PositionalEmbedding(nn.Module):
         positions = (torch.cumsum(mask, dim=1).type_as(inputs) * mask).long() + self.padding_idx
 
         # Lookup positional embeddings for each position and return in shape of input tensor w/o gradient
-        return self.weights.index_select(0, positions.view(-1)).view(batch_size, seq_len, -1).detach()
+        return self.weights.index_select(0, positions.contiguous().view(-1)).contiguous().view(batch_size, seq_len, -1).detach()
 
 
 def LayerNorm(normal_shape, eps=1e-5):
