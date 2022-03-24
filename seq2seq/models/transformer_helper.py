@@ -227,7 +227,6 @@ class MultiHeadAttention(nn.Module):
         # Get size features
         tgt_time_steps, batch_size, embed_dim = query.size()
         assert self.embed_dim == embed_dim
-
         '''
         ___QUESTION-7-MULTIHEAD-ATTENTION-START
         Implement Multi-Head attention  according to Section 3.2.2 of https://arxiv.org/pdf/1706.03762.pdf.
@@ -269,7 +268,11 @@ class MultiHeadAttention(nn.Module):
 
         scaled_attn_weights = torch.bmm(Q,K.transpose(1, 2)) / self.head_scaling
         # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)       
-
+        if key_padding_mask is not None:
+            key_padding_mask = key_padding_mask.unsqueeze(dim=1).repeat(self.num_heads,1,1)
+            scaled_attn_weights.masked_fill(key_padding_mask, -1e10)
+        if attn_mask is not None:
+            scaled_attn_weights += attn_mask.unsqueeze(dim=0)
         attn_weights = F.softmax(scaled_attn_weights, dim=-1)  # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
         # apply softmax function
 
