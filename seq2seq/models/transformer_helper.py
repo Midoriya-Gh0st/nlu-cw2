@@ -245,12 +245,11 @@ class MultiHeadAttention(nn.Module):
         # attn_weights must be size [num_heads, batch_size, tgt_time_steps, key.size(0)]
         # TODO: REPLACE THESE LINES WITH YOUR IMPLEMENTATION ------------------------ CUT
 
-        # nn.MultiheadAttention()
         attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim, self.num_heads))
         attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, key.size(0))) if need_weights else None
         # TODO: attn = attn_weights * value
 
-        # 一组(单个head)的QKV:
+        # 1. Linear projection of Query, Key and Value
         q, k, v = self.q_proj(query), self.k_proj(key), self.v_proj(value)
         # torch.size(tgt_time_steps, batch_size, embed_dim)
 
@@ -258,16 +257,23 @@ class MultiHeadAttention(nn.Module):
         d_k = self.head_embed_size
         # self.num_heads * self.head_embed_size = embed_size (即: embed_dim)
 
+        # 2. Computing scaled dot-product attention for h attention heads.
         # 拆分为multi-head, 即: 把 [*, *, embed_size] -> [*, *, self.num_heads, self.head_embed_size]
         q, k, v = [x.view(x.size(0), x.size(1), self.num_heads, d_k) for x in (q, k, v)]
         # [tgt_time_steps, batch_size, self.num_heads, self.head_embed_size]
 
         # Transpose: 把head提到前面, 即: 第一维度为head_i. 所以之后方便把几个head给concatenate起来:
+        # reshape q,k,v into torch.size(tgt_time_steps, batch_size, num_heads, head_embed_dim)
+        # attn_weights must be [num_heads, batch_size, tgt_time_steps, key.size(0)]
+        # so we need to transpose Q, K, V into torch.size(num_heads, batch_size, tgt_time_steps, head_embed_dim)
         q, k, v = [x.transpose(0, 2) for x in (q, k, v)]
         # [self.num_heads, batch_size, tgt_time_steps, self.head_embed_size]
         # torch.Size([2, 10, 11, 64])
 
         # 因为计算attn_score需要使用torch.bmm(), 要把qkv转换回3D:
+        # attn is a fixed size(tgt_time_steps, batch_size, embed_dim)
+        # for Q, K, V  tgt_time_steps is fixed, embed_dim is fixed as head_embed_dim # TODO: [?]
+        # so Q, K, V need to be reshaped into torch.size(tgt_time_step, batch_size, head_embed_dim)
         q, k, v = [x.contiguous().view(self.num_heads * batch_size, -1, self.head_embed_size) for x in (q, k, v)]
         # [self.num_heads * batch_size, -1, self.head_embed_size]
         # QKV:: torch.Size([20, 11, 64])
@@ -347,18 +353,28 @@ class MultiHeadAttention(nn.Module):
         # input()
 
         # 3. 把多个head, 拼接在一起
+        # Concatenation of heads and output projection.
+        # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
+        # but now it is torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
+        # so we need to convert it into torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
+
         # attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
+
+
         attn = attn.view(self.num_heads, batch_size, -1, self.head_embed_size)
         # [num_heads, batch_size, tgt_time_steps, head_embed_size]
 
+        # then transpose it
         attn = attn.transpose(0, 2)
         # [tgt_time_steps, batch_size, num_heads, head_embed_size]
 
+        # at last, reshape attn
         cat_attn = attn.contiguous().view(-1, batch_size, embed_dim)
         # [tgt_time_steps, batch_size, embed_dim = num_heads * head_embed_size]
         # print("cat-attn:", cat_attn.size())
         # input()
 
+        # output projection
         # attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
         # self.out_proj: nn.Linear(self.embed_dim, self.embed_dim, bias=True)
         # output_projection & Wo
