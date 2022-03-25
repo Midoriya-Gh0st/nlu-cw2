@@ -333,7 +333,6 @@ class MultiHeadAttention(nn.Module):
         # apply softmax function
         # -----------
 
-
         # optional: apply dropout functions
         attn_weights = F.dropout(attn_weights, p=self.attention_dropout, training=self.training)
         # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
