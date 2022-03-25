@@ -301,11 +301,14 @@ class MultiHeadAttention(nn.Module):
             # [num_heads, batch_size, tgt_time_steps, tgt_time_steps]
             # torch.Size([2, 10, 14, 14])
 
+            # generate key_padding_masks for each heads
             # key_padding_mask: (batch_size, source_seq_len)  # torch.Size([10, 14])
             key_padding_mask = key_padding_mask.unsqueeze(0).unsqueeze(2)  # 这里实际沿着num_heads发生了repeat()
+            
             # [1, batch_size, 1, tgt_time_steps]
             # torch.Size([1, 10, 1, 14])
 
+            # mask the scaled attn_weights
             scaled_score = scaled_score.masked_fill(key_padding_mask, float('-inf'))
             # [num_heads, batch_size, tgt_time_steps, tgt_time_steps]
             # torch.Size([2, 10, 14, 14])
@@ -314,11 +317,22 @@ class MultiHeadAttention(nn.Module):
             scaled_score = scaled_score.view(self.num_heads * batch_size, -1, scaled_score.size(-1))
             # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
 
-        attn_weights = F.softmax(scaled_score, dim=-1)  # batch_size, time_steps, head_embed
+        attn_weights = F.softmax(scaled_score, dim=-1)
         # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
         # torch.Size([20, 11, 11])
         # print("the attn_weights:", attn_weights.size())
         # input()
+
+        # 原先: 
+        # ---------- 
+            # key_padding_mask = key_padding_mask.unsqueeze(dim=1).repeat(self.num_heads,1,1)# generate key_padding_masks for each heads
+            # scaled_attn_weights.masked_fill(key_padding_mask, -1e10) # mask the scaled attn_weights
+        # if attn_mask is not None:
+        #     scaled_attn_weights += attn_mask.unsqueeze(dim=0)
+        # attn_weights = F.softmax(scaled_attn_weights, dim=-1)  # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
+        # apply softmax function
+        # -----------
+
 
         # optional: apply dropout functions
         attn_weights = F.dropout(attn_weights, p=self.attention_dropout, training=self.training)
