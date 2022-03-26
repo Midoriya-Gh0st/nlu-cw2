@@ -22,10 +22,9 @@ So at each time step, we can get the current output sequence probability given t
 P(Prev, targ | input) = P(targ | Prev, input) P(Prev | input)
 the size of it is the same as the probability above, because we need to get only the first bth output sequence at each timestep.
 pseudo code:
-i. current prob, current state = decoder(previous word, previous state) # use
-the decode to generate the probability of all word at current step, the current prob equals to P()
+i. current prob, current state = decoder(previous word, previous state) # use the decode to generate the probability of all word at current step, the current prob equals to P()
 ii. current prob.sort() # sort the probability from max to min
-iii. beams = current prob(:beam width).index() # get the first beam_width highest probabilities and return the words
+iii. beams = current prob(:beam width).index() # get the first beam_width the highest probabilities and return the words
 iv. previous word = previous word+beams # Prev, we get b pieces of probable sequences
 v. previous state = current state
 vi. for each sequence in previous word, compute the next b words in the next loop

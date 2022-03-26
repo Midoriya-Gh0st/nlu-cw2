@@ -124,13 +124,24 @@ def main(args):
             2.  Add line-by-line description about the following lines of code do.
             '''
             output, _ = model(sample['src_tokens'], sample['src_lengths'], sample['tgt_inputs'])
+            # fit train data and get decoder out
+            # batch, tgt_dict_len
 
             loss = \
                 criterion(output.view(-1, output.size(-1)), sample['tgt_tokens'].view(-1)) / len(sample['src_lengths'])
+            # 根据CrossEntropyLoss,
+            # 除src_len, 看平均loss, 不然对于不同长度的句子, loss的合不同, 无法比较
+
             loss.backward()
+
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
+            # https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html
+
             optimizer.step()
+            #
+
             optimizer.zero_grad()
+            # 原因?
             '''___QUESTION-1-DESCRIBE-F-END___'''
 
             # Update statistics for progress bar

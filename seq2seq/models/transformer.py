@@ -107,10 +107,11 @@ class TransformerEncoder(Seq2SeqEncoder):
         1.  Add tensor shape annotation to each of the output tensor
         2.  What is the purpose of the positional embeddings in the encoder and decoder? 
             - 普通的attention, 没有记录位置信息.
+            - capture posi info.
             - ...
         3.  Why can't we use only the embeddings similar to for the LSTM? 
             # Question 6-a-3 asks why transformers require positional embeddings while LSTMs do not. 
-            - lstm是顺序的, 逐个产生, 因此在其memory里记录了"位置信息";
+            - lstm是顺序的, 逐个产生, 通过recurrent, 因此在其memory里记录了"位置信息";
             - 普通attention不包含位置信息, 比如 "how are you" 和 "how you are" 会产生相同的attention (相同attn, 还是相同attn_score); 
         '''
         embeddings += self.embed_positions(src_tokens)
@@ -219,6 +220,9 @@ class TransformerDecoder(Seq2SeqDecoder):
             2.  What is the purpose of self_attn_mask? 
                 - 把后面的steps的attention给mask掉;
             3.  Why do we need it in the decoder but not in the encoder?
+                - self_attn是句子所有词之间做attention, 需要和每个word之间联系, 得到attention, 句间关系, .. 
+                - encoder需要这样的全面的关系, 但是decoder要防止被future info影响, 只看当前输出之前的.
+                
                 - 在decoder中, 需要在当前tgt_step, 把后面的steps给mask掉, 只保留当前时刻的关于src的attention;
                 - 在encoder中不需要, encoder需要一个全面的attention; 
                 - Decoder 还需要防止标签泄露，即在 t 时刻不能看到 t 时刻之后的信息. 即除了padding_mask, 还需要sequence_mask;
@@ -263,10 +267,12 @@ class TransformerDecoder(Seq2SeqDecoder):
                 - 对embedding(还是hidden_state)进行投影, 生成包含每个单词的prob_dist;
                 - 这里说的是, "after the decoder layers", 是说最后生成每个单词的概率吗?
                 - 还是就是仅仅这一行的代码的作用?
+                classify
             3.  What is the dimensionality of forward_state after this line? 
                 - [10, 11, 4420]
             4.  What would the output represent if features_only=True?
                 - 不执行linear....., 直接输出decoder_output;
+                - 只输出hidden, embed, 
             '''
             # print("size::forward_state-0:", forward_state.size())
             # [10, 11, 128]

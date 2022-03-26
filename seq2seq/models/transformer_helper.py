@@ -27,7 +27,6 @@ class TransformerEncoderLayer(nn.Module):
     def forward(self, state, encoder_padding_mask):
         """Forward pass of a single Transformer Encoder Layer"""
         residual = state.clone()
-
         '''
         ___QUESTION-6-DESCRIBE-D-START___
         1.  Add tensor shape annotation to EVERY TENSOR below (NOT just the output tensor)

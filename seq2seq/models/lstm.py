@@ -190,7 +190,7 @@ class LSTMEncoder(Seq2SeqEncoder):
         # print(">>> check:", self.bidirectional)
 
         if self.bidirectional:  # biRNN的 encoder_layer, 双层
-            state_size = 2 * self.num_layers, batch_size, self.hidden_size
+            state_size = 2 * self.num_layers, batch_size, self.hidden_size  # TODO: 这算是更改了num_layer吗? 不是.
         else:  # self.num_layers在输入时为1(lstm), 若bi, 在这里*2;
             state_size = self.num_layers, batch_size, self.hidden_size
 
@@ -224,10 +224,12 @@ class LSTMEncoder(Seq2SeqEncoder):
             # concatenated separately by the dimension of hidden units
             # 两个方向: the hidden units along the two directions are concatenated together.
             如果self.bidirectional为True，两个方向的final_hidden_states和final_cell_states会分别按照隐藏单元的维度拼接起来
+            - lstm, 13579, 2468, 画个图
         3.  What is the difference between final_hidden_states and final_cell_states?
             #-- The final_hidden_states is the last hidden unit of each sentence and the final_cell_states 
             # is the last cell unit of lstm cells
             # TODO: 是否还要解释cell unit和hidden unit的区别&具体含义. 
+            https://datascience.stackexchange.com/questions/82808/difference-between-lstm-cell-state-and-hidden-state
         '''
         # print("[test-06-2]: final_hidden_states")
         # print(f'biRNN?: {self.bidirectional}')
@@ -236,12 +238,13 @@ class LSTMEncoder(Seq2SeqEncoder):
             def combine_directions(outs):
                 # 在dim2(hidden)上合并 (合并的是hidden unites)
                 # print('out.size(0):', outs.size(0))
-                return torch.cat([outs[0: outs.size(0): 2], outs[1: outs.size(0): 2]], dim=2)
+                return torch.cat([outs[0: outs.size(0): 2], outs[1: outs.size(0): 2]], dim=2)  # TODO: 不是按方向,
             final_hidden_states = combine_directions(final_hidden_states)
-            # print(f"cat-size: {final_hidden_states.size()}")  # torch.Size([1, 10, 128])
+            # print(f"cat-size: {final_hidden_states.size()}")  # torch.Size([1, 10, 128])  #
             # -- # [2, 10, 64] => [1, 10, 128], 把两个方向的hidden64拼接 [加入batch, 表示10句话用以填充一次hidden]
-            final_cell_states = combine_directions(final_cell_states)
-            # [2, 10, 64] => [1, 10, 128]
+            final_cell_states = combine_directions(final_cell_states)  # TODO: num_layers, batch_size, 2*hidden_size
+            # TODO: 为啥是num_layers, 不是nul_layers/2: 上边并没有更改self.num_layers;
+            # [2, 10, 64] => [1, 10, 128]  # TODO: 看图, 最后把不同layer的相同batch拼接起来;
             # --
         '''___QUESTION-1-DESCRIBE-A-END___'''
 
@@ -310,9 +313,11 @@ class AttentionLayer(nn.Module):
             - Then delete the dimension added just now and the score remains and we get attention weights. 
             - At last, we multiple the attention weights and the output of the encoder to compute the attention 
               context of the model.
+              # 其他参考: https://medium.com/syncedreview/a-brief-overview-of-attention-mechanism-13c578ba9129
         3.  Why do we need to apply a mask to the attention scores?
             - To make sure that the attention mechanism will not share any information of the tokens in the future, 
               when we predict the token with previous ones.
+            - 
          # # # 是说把padded_0的零分attn转换为-inf吗? 
          # 更详细的, 因为还要把attn_scores进行归一化, 有效的attn_score有正有负, 无效的attn_score=0; 
         '''
@@ -322,7 +327,7 @@ class AttentionLayer(nn.Module):
             # print("value-0::src-mask:", src_mask)
 
             src_mask = src_mask.unsqueeze(dim=1)
-            # print("size-1::src-mask:", src_mask.size())     # torch.Size([10, 1, 22])  # 插入指定dim
+            # print("size-1::src-mask:", src_mask.size())     # torch.Size([10, 1, 22-src])  # 插入指定dim
             # print("value-1::src-mask:", src_mask)
 
             # print("[test-08]: attn-score")
@@ -342,7 +347,8 @@ class AttentionLayer(nn.Module):
         # [√] attn_context 表示什么?
         # context (with attention) vector: c = attn_w * encoder_hidden.T,  # 对src_hidden的加权;
         # 即: computed as the weighted average over all the source hidden states  [成立√]
-        context_plus_hidden = torch.cat([tgt_input, attn_context], dim=1)
+        context_plus_hidden = torch.cat([tgt_input, attn_context], dim=1)  #
+        # [batch, hidden*2]
         """  context_plus_hidden 表示什么?
              - (1) attention_vector, 即: context_vector;
              - (2) tgt_input, 即: tgt_hidden_state;
@@ -351,6 +357,7 @@ class AttentionLayer(nn.Module):
         # Wc来自哪里? - 使用linear(), 会自动introduce这个weight;
         attn_out = torch.tanh(self.context_plus_hidden_projection(context_plus_hidden))
         """ attn_out = h(t)~ = attention_vector """
+        # [batch, hidden]
         # projection的作用是什么? 一个fc全连接层, 然后把"context_plus_hidden"的特征映射到这个dim=[x x]的空间?
         # linear -> w提取出来
 
@@ -369,6 +376,7 @@ class AttentionLayer(nn.Module):
         3.  What role does batch matrix multiplication (i.e. torch.bmm()) play in aligning encoder and decoder representations?
             - bmm([b, n, m], [b, m, p]) => [b, m, p]
             - batch维度不变, [1, 22] * [22, 128] => [1, 128], 
+            - 效果: 执行矩阵dot prod. 相似度高, 则值更大. => 注重:  encoder and decoder representations之间的align;
         '''
         # general_score: score(h(t), h(s)_) = h(t).T * Wa * h(s)_;
         # 在哪里用了attention_weight Wa?
@@ -388,7 +396,9 @@ class AttentionLayer(nn.Module):
         # TODO: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是"自己"算出来的.
 
         attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)  # TODO: 这里用的不是简单的ht*hs吗?
-        # 即: 不是简单的 ht*hs, 而是 ht * (Wa*hs), 即: general_score;
+        # 即: 不是简单的 ht*hs, 而是 ht * (Wa*hs), 即: general_score;  # ht没有context
+        # TODO: 再说一下general_score - paper;
+        # 说详细些: tgt_current和*每一个*src_words, 矩阵,
 
         # print("size::attn_score:", attn_scores.size())  # torch.Size([10, 1, 22])
         # [10, 1, 128] * [10, 128, 22] = [10, 1, 22]
@@ -496,12 +506,14 @@ class LSTMDecoder(Seq2SeqDecoder):
                   return None
               即: incremental_state没有保存该sequence需要的state信息, 如(hidden, cell).
             - full_key? 是指 [module_name, module_instance(id), key] 这个整体;
+            # TODO: 当incremental_decoding被turn off之后就为None;
             ----------- 然而set_incremental_state, 没有效果
         4.  What role does input_feed play?
-            - input feed: output from previous time_step
+            - input feed: output from current time_step and as part of the input for next tiem_step;
             - [1] 获取初始lstm_input: lstm_input = torch.cat([tgt_embeddings[j, :, :], input_feed], dim=1) # 511
             - [2] 即: 把前一刻的h(t)~, 结合这一刻的embedding, 作为当前lstm_time_step的输入. 
                   -- 注意在第一次用全零初始化, 在之后用tgt_hidden_state[-1]来初始化, 见556, marked;
+            - 谈一下role, 这个意义: 
         '''
         # TODO: _get_full_incremental_state_key(module_instance, key):
         # 的 module_instance是什么, key是什么(instance的id?);
@@ -512,6 +524,11 @@ class LSTMDecoder(Seq2SeqDecoder):
             # 应该是指previous_token_state
             # [incremental state]: 保存一些seq需要的"state": hidden state, cell state;
             tgt_hidden_states, tgt_cell_states, input_feed = cached_state
+            # TODO: 想象attention_mask的倒三角matrix, 每次计算, 都保存这个值, 然后把每次新计算的值也保存下来.
+            # 1 0 0 0
+            # 1 1 0 0
+            # 1 1 1 0  # 保存的是什么东西?
+            # https://sshleifer.github.io/blog_v2/jupyter/2020/03/11/Decoding.html
             print("="*60)  # 没有输出
             assert 1 == 2  # 不会中断, 即cached_state始终为None?
         else:
@@ -581,13 +598,16 @@ class LSTMDecoder(Seq2SeqDecoder):
             ___QUESTION-1-DESCRIBE-E-START___
             1.  Add tensor shape annotation to each of the output tensor
             2.  How is attention integrated into the decoder? 
-                - 
+                - dot prod
+                - 原理是什么
+                - 在代码中又是怎么执行的
             3.  Why is the attention function given the previous target state as one of its inputs? 
                 - 分析原论文的函数, 联系笔记图, [?] previous_tgt_state & 本时刻embedding ...
                 - 代码上: 调用attention, 其实会调用attention_layer的forward()函数, 所以需要作为tgt_input();
-                - 理论上: previous?
+                - 理论上: previous? 这里-1就是表示这个layer的前一个, forward:[1, 3, 5, 7...]. 这里是两个平行layer.不是, 是一个layer. 
+                - 不要太复杂. 
             4.  What is the purpose of the dropout layer?
-                - ... 网络资料有.
+                - ... 明显地减少过拟合现象
             '''
             # print("[test-12] input_feed")
             # print("[size::tgt_hidden_states]:", len(tgt_hidden_states))  # len=1
@@ -598,6 +618,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                 assert 1 == 2
             else:
                 input_feed, step_attn_weights = self.attention(tgt_hidden_states[-1], src_out, src_mask)
+                # ->> 去找attention的forward函数, 这里tgt_hidden就表示函数里的tgt_input, 即: query, 和src_out(即:key"s"), 来乘, 获得score等.
                 # TODO: 这里的tgt_hidden_states[-1], 表示的是前一时刻的tgt_hidden,
                 """已经经过了rnn_layer(), 这是已经更新过的 [tgt_hidden_states]"""
                 # TODO: 为什么是前一时刻的? 因为要产生下一时刻的input_feed;
@@ -626,6 +647,7 @@ class LSTMDecoder(Seq2SeqDecoder):
 
                 attn_weights[:, j, :] = step_attn_weights  # step_attn表示当前时间段, 关于所有encoder_out的attn;
                 # 填充attn_weights
+                # batch, tgt, src;
 
                 # print("[size::input_feed-3]:", input_feed.size())  # torch.Size([10, 128])
                 # print("[size::step_attn_weights]:", step_attn_weights.size())  # TODO: torch.Size([10, 22])
@@ -679,6 +701,7 @@ class LSTMDecoder(Seq2SeqDecoder):
             self, incremental_state, 'cached_state', (tgt_hidden_states, tgt_cell_states, input_feed))
         # print(f"[test-13-6]: {type(incremental_state)}", incremental_state)  # NoneType, None
         # TODO: 根本就没用到?
+        # 说是只在decoder中用到?
 
         # Collect outputs across time steps
         decoder_output = torch.cat(rnn_outputs, dim=0).view(tgt_time_steps, batch_size, self.hidden_size)
