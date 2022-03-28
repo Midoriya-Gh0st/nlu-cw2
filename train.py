@@ -123,7 +123,11 @@ def main(args):
             1.  Add tensor shape annotation to each of the output tensor
             2.  Add line-by-line description about the following lines of code do.
             '''
+            # print(sample['src_tokens'].size())    [10, 11]
+            # print(sample['src_lengths'].size())   # [10]
+            # print(sample['tgt_inputs'].size())    [10, 11]
             output, _ = model(sample['src_tokens'], sample['src_lengths'], sample['tgt_inputs'])
+            # torch.Size([10, 11, 4420]), [batch_size, tgt_time_steps, tgt_dictionary_length]
             # fit train data and get decoder out
             # batch, tgt_dict_len
 
@@ -131,6 +135,8 @@ def main(args):
                 criterion(output.view(-1, output.size(-1)), sample['tgt_tokens'].view(-1)) / len(sample['src_lengths'])
             # 根据CrossEntropyLoss,
             # 除src_len, 看平均loss, 不然对于不同长度的句子, loss的合不同, 无法比较
+            # print("the loss:", loss)  # torch.Size([]) = 0, only one scalar.
+            # tensor(26.5837, grad_fn=<DivBackward0>)
 
             loss.backward()
 

@@ -240,9 +240,11 @@ class LSTMEncoder(Seq2SeqEncoder):
                 # print('out.size(0):', outs.size(0))
                 return torch.cat([outs[0: outs.size(0): 2], outs[1: outs.size(0): 2]], dim=2)  # TODO: 不是按方向,
             final_hidden_states = combine_directions(final_hidden_states)
+            # final_hidden_states.size = [num_layers, batch_size, 2 * hidden_size]
             # print(f"cat-size: {final_hidden_states.size()}")  # torch.Size([1, 10, 128])  #
             # -- # [2, 10, 64] => [1, 10, 128], 把两个方向的hidden64拼接 [加入batch, 表示10句话用以填充一次hidden]
             final_cell_states = combine_directions(final_cell_states)  # TODO: num_layers, batch_size, 2*hidden_size
+            #  # final_cell_states.size = [num_layers, batch_size, 2 * hidden_size]
             # TODO: 为啥是num_layers, 不是nul_layers/2: 上边并没有更改self.num_layers;
             # [2, 10, 64] => [1, 10, 128]  # TODO: 看图, 最后把不同layer的相同batch拼接起来;
             # --
@@ -327,6 +329,7 @@ class AttentionLayer(nn.Module):
             # print("value-0::src-mask:", src_mask)
 
             src_mask = src_mask.unsqueeze(dim=1)
+            # src_mask.size = [batch_size, 1, src_time_steps]
             # print("size-1::src-mask:", src_mask.size())     # torch.Size([10, 1, 22-src])  # 插入指定dim
             # print("value-1::src-mask:", src_mask)
 
@@ -334,20 +337,24 @@ class AttentionLayer(nn.Module):
             # print("size::attn_score:", attn_scores.size())  # torch.Size([10, 1, 22])
             # print("value-0::attn_score:", attn_scores)
             attn_scores.masked_fill_(src_mask, float('-inf'))    # TODO: 设定成-inf. 其余的attn有负值, 因此使用-inf;
+            # attn_scores.size = [batch_size, 1, src_time_steps]
             # print("value-1::attn_score:", attn_scores)         # 把在attn_scores中的value_0转化为value_-inf;
 
         # 公式7: alignment_vec = align(h_t, h_s) = softmax(score(h_t, h_s));
         # 所以, 这里的weights就是 alignment vector;
         attn_weights = F.softmax(attn_scores, dim=-1)           # 将attn_scores归一化[0, 1];
+        # attn_weights.size = [batch_size, 1, src_time_steps]
         # 使得每一句子(list[])的sum=1, 从而对每个word分配attn;  # 想象一下一个句子里面对不同的word有不同的attn权重(关注度);
 
         # print("size::attn_weights:", attn_weights.size())     # torch.Size([10, 1, 22])
         # print("value::attn_weights:", attn_weights)
         attn_context = torch.bmm(attn_weights, encoder_out).squeeze(dim=1)  # [10,1,22], [10,22,128]) => [10,1,128] => [10,128]
+        # attn_context.size = [batch_size, input_dims]  # TODO: input dimes (上面)? hidden_size?
         # [√] attn_context 表示什么?
         # context (with attention) vector: c = attn_w * encoder_hidden.T,  # 对src_hidden的加权;
         # 即: computed as the weighted average over all the source hidden states  [成立√]
         context_plus_hidden = torch.cat([tgt_input, attn_context], dim=1)  #
+        # context_plus_hidden.size = [batch_size, ]  # TODO: cat 是value相加, 还是dim相加?
         # [batch, hidden*2]
         """  context_plus_hidden 表示什么?
              - (1) attention_vector, 即: context_vector;
@@ -356,6 +363,7 @@ class AttentionLayer(nn.Module):
         # 公式(5):  h(t)~ = tanh(Wc[c(t); h(t)]  # 文中: 简单的把ct和ht的信息联合起来一起使用;
         # Wc来自哪里? - 使用linear(), 会自动introduce这个weight;
         attn_out = torch.tanh(self.context_plus_hidden_projection(context_plus_hidden))
+        # attn_out.size = [batch_size, src_time_steps]
         """ attn_out = h(t)~ = attention_vector """
         # [batch, hidden]
         # projection的作用是什么? 一个fc全连接层, 然后把"context_plus_hidden"的特征映射到这个dim=[x x]的空间?
@@ -386,8 +394,9 @@ class AttentionLayer(nn.Module):
         # print("size::encoder_out_proj:", self.src_projection(encoder_out).size())  # torch.Size([10, 6, 128])
         # print("value::encoder_out_prj:", self.src_projection(encoder_out))
         projected_encoder_out = self.src_projection(encoder_out).transpose(2, 1)
+        # projected_encoder_out.size = [batch_size, input_dim, tgt_time_steps]  # TODO: tgt? src?
         # print("size::encoder_out_proj_tran:", projected_encoder_out.size())        # torch.Size([10, 128, 6])
-        # projection操作的作用:
+        # projection操作的作用:  # TODO: 128 哪来的?
         # 扩增维度. 若有linear=Linear(20, 30), 有输入x=(128, 20), 则linear(x) = (128, 30)
         # => linear(encoder_out) = (10, 22, 128) * (128, 128) => (10, 22, 128)  # 虽然size相同, 但是value不同;
         # 22或者6, 都是句子长度(单词个数);
@@ -395,7 +404,9 @@ class AttentionLayer(nn.Module):
         # TODO: 那么这里projected_encoder_out表示什么? 表示被[权重]处理过的encoder_output吗? (Wa * hs)
         # TODO: 疑问: Wa, 是指attention weight吗?, 实际上是从linear()函数中获取的, 不是"自己"算出来的.
 
+        # [batch_size, input_dims]
         attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)  # TODO: 这里用的不是简单的ht*hs吗?
+        # attn_scores.size = [batch_size, 1, tgt_time_steps]  # TODO: tgt? batch里给每个句子. 是source! 每个source_word关于tgt_time
         # 即: 不是简单的 ht*hs, 而是 ht * (Wa*hs), 即: general_score;  # ht没有context
         # TODO: 再说一下general_score - paper;
         # 说详细些: tgt_current和*每一个*src_words, 矩阵,
@@ -537,7 +548,7 @@ class LSTMDecoder(Seq2SeqDecoder):
 
             tgt_hidden_states = [torch.zeros(tgt_inputs.size()[0], self.hidden_size) for i in range(len(self.layers))]
             # print('tgt_hidden_states size:', tgt_hidden_states[0].size())
-            # input()
+            # input()  # TODO:
 
             tgt_cell_states = [torch.zeros(tgt_inputs.size()[0], self.hidden_size) for i in range(len(self.layers))]
             # tgt_inputs.size()[0]? 表示词数吗? 句子长.
@@ -659,7 +670,8 @@ class LSTMDecoder(Seq2SeqDecoder):
                     # __QUESTION-5: Compute and collect LEXICAL MODEL context vectors here
                     # TODO: --------------------------------------------------------------------- CUT
                     # src_embeddings = [src_time_steps, batch_size, embed_dim]
-                    f_s = torch.transpose(src_embeddings, 0, 1)
+                    # f_s = torch.transpose(src_embeddings, 0, 1)  # TODO: 改为下面
+                    f_s = src_embeddings.transpose(0, 1)
                     # f_s = [batch_size, src_time_steps, embed_dim]
 
                     # step_attn_weights = [batch_size, src_time_steps]
@@ -667,7 +679,7 @@ class LSTMDecoder(Seq2SeqDecoder):
                     # a_t_s = [batch_size, 1, src_time_steps]
                     # TODO: step_attn_weights, 里面的每一行都是step_attn_weight [tgt_word关于单个src_word]?
 
-                    # TODO: l - 表示什么?
+                    # TODO: l - 表示什么?: 表示lexical_model的标志
                     f_t_l = torch.tanh(torch.bmm(a_t_s, f_s))  # 这里应该使用torch.tanh, 不是纯tanh;  # 这里是矩阵做乘, 不用求sum了吗?
                     # f_t_l : [batch_size, 1, embed_dim]
                     # = bmm([batch_size, 1, src_time_steps], [batch_size, src_time_steps, embed_dim])
@@ -715,6 +727,7 @@ class LSTMDecoder(Seq2SeqDecoder):
 
         # Transpose batch back: [tgt_time_steps, batch_size, num_features] -> [batch_size, tgt_time_steps, num_features]
         decoder_output = decoder_output.transpose(0, 1)
+        #  decoder_output.size = [batch_size, tgt_time_steps, num_features]
 
         # Final projection
         decoder_output = self.final_projection(decoder_output)

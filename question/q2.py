@@ -84,8 +84,16 @@ if __name__ == '__main__':
     de_distinct_words = statistic_q2('de')
 
     same_words_count = 0
+    same_words = []
     for en_word in en_distinct_words:
         for de_word in de_distinct_words:
             if en_word == de_word:
+                same_words.append(f'{en_word}\n')
                 same_words_count += 1
+
+    same_words = sorted(same_words)
+    with open('same_words.txt', 'w', encoding='utf-8') as f:
+        for word in same_words:
+            f.write(word)
+
     print('same_words_count:', same_words_count)
