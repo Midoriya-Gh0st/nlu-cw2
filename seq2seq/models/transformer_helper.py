@@ -146,6 +146,7 @@ class TransformerDecoderLayer(nn.Module):
                  --- 因此self_attn需要mask; 
         when we predict the first word, 
         '''
+        # TODO: 需要写所有的shape.
         state, attn = self.encoder_attn(query=state,
                                         key=encoder_out,
                                         value=encoder_out,

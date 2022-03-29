@@ -204,6 +204,7 @@ Epoch 098: loss 2.15 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 2
 Epoch 098: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27
 Epoch 099: loss 2.142 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 29.46 | clip 1                                                  6, clip=1]
 Epoch 099: valid_loss 3.3 | num_tokens 13.8 | batch_size 500 | valid_perplexity 27
+detect::end
 >>> initial encoder.
 1.bidirectional: True True
 en-self.num_layers: 1

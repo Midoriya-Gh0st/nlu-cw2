@@ -200,6 +200,7 @@ Epoch 096: loss 2.351 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 
 Epoch 096: valid_loss 3.39 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.6
 Epoch 097: loss 2.345 | lr 0.0003 | num_tokens 13.4 | batch_size 10 | grad_norm 23.67 | clip 1                                                  7, clip=1]
 Epoch 097: valid_loss 3.38 | num_tokens 13.8 | batch_size 500 | valid_perplexity 29.4
+detect::end
 No validation set improvements observed for 10 epochs. Early stop!
 >>> initial encoder.
 1.bidirectional: True True

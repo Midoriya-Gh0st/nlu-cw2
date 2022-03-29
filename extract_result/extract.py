@@ -6,6 +6,9 @@ def read_content(file_name):
         train_loss, valid_loss, valid_perplexity = [], [], []
         lines = f.readlines()
         for line in lines:
+            if line.strip() == "detect::end":
+                print(line)
+                break
             if len(line) >= 20 and line.split()[0] == 'Epoch':
                 arr = line.split()
                 if arr[2] == 'loss':  # train
@@ -16,12 +19,11 @@ def read_content(file_name):
     return train_loss, valid_loss, valid_perplexity
 
 
-q1_out_log = '../question/normal.txt'
+q1_out_log = '../question/baseline-out.txt'
 q1_tra_loss, q1_val_loss, q1_val_ppl = read_content(q1_out_log)
 
-q2_out_log = '../question/q4.txt'
+q2_out_log = '../question/q4-out.txt'
 q2_tra_loss, q2_val_loss, q2_val_ppl = read_content(q2_out_log)
-
 
 print(len(q1_tra_loss))  # 5.625 -> 2.142
 print(len(q1_val_loss))  # 5.09 -> 3.3
@@ -45,10 +47,15 @@ def my_plot(title, tra_loss, val_loss):
     plt.ylabel('loss')
     plt.legend(["train", "validation"])
     plt.show()
+    
 
 
 my_plot(q1_title, q1_tra_loss, q1_val_loss)
 my_plot(q2_title, q2_tra_loss, q2_val_loss)
+
+of_out_log = '../question/overfit-out2.txt'
+of_tra_loss, of_val_loss, of_val_ppl = read_content(of_out_log)
+my_plot("over-fitting", of_tra_loss, of_val_loss)
 
 # q4:
 # validation已经收敛, 但是train还在下降, 这说明train开始"复制数据", 即过拟合;
