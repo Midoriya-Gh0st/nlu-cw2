@@ -30,10 +30,10 @@ def get_args():
     parser.add_argument('--arch', default='lstm', choices=ARCH_MODEL_REGISTRY.keys(), help='model architecture')
 
     # Add optimization arguments
-    parser.add_argument('--max-epoch', default=150, type=int, help='force stop training at specified epoch')  # todo:
+    parser.add_argument('--max-epoch', default=100, type=int, help='force stop training at specified epoch')
     parser.add_argument('--clip-norm', default=4.0, type=float, help='clip threshold of gradients')
     parser.add_argument('--lr', default=0.0003, type=float, help='learning rate')
-    parser.add_argument('--patience', default=10000, type=int,  # todo:
+    parser.add_argument('--patience', default=10, type=int,
                         help='number of epochs without improvement on validation set before early stopping')
 
     # Add checkpoint arguments
