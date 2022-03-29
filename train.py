@@ -127,12 +127,13 @@ def main(args):
             # print(sample['src_lengths'].size())   # [10]
             # print(sample['tgt_inputs'].size())    [10, 11]
             output, _ = model(sample['src_tokens'], sample['src_lengths'], sample['tgt_inputs'])
-            # torch.Size([10, 11, 4420]), [batch_size, tgt_time_steps, tgt_dictionary_length]
+            # output.size = [batch_size, tgt_time_steps, tgt_dictionary_length]
+            # torch.Size([10, 11, 4420]),
             # fit train data and get decoder out
-            # batch, tgt_dict_len
 
             loss = \
                 criterion(output.view(-1, output.size(-1)), sample['tgt_tokens'].view(-1)) / len(sample['src_lengths'])
+            # loss.size = []  # scaler
             # 根据CrossEntropyLoss,
             # 除src_len, 看平均loss, 不然对于不同长度的句子, loss的合不同, 无法比较
             # print("the loss:", loss)  # torch.Size([]) = 0, only one scalar.
@@ -141,13 +142,13 @@ def main(args):
             loss.backward()
 
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
+            # grad_norm.size = []  # a single vector
+            # <class 'torch.Tensor'> tensor(2.3487)
             # https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html
 
             optimizer.step()
-            #
 
             optimizer.zero_grad()
-            # 原因?
             '''___QUESTION-1-DESCRIBE-F-END___'''
 
             # Update statistics for progress bar
