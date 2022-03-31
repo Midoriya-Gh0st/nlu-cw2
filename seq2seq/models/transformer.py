@@ -141,8 +141,6 @@ class TransformerEncoder(Seq2SeqEncoder):
         for layer in self.layers:
             forward_state = layer(state=forward_state, encoder_padding_mask=encoder_padding_mask)
 
-
-
         return {
             "src_out": forward_state,   # [src_time_steps, batch_size, num_features]
             "src_embeddings": src_embeddings,   # [batch_size, src_time_steps, num_features]
@@ -186,6 +184,8 @@ class TransformerDecoder(Seq2SeqDecoder):
     def forward(self, tgt_inputs, encoder_out=None, incremental_state=None, features_only=False):
         # Embed positions
         positions = self.embed_positions(tgt_inputs, incremental_state=incremental_state)
+
+        # print("the out:", tgt_inputs[:, -1:].size())
 
         # print("inc_state:", incremental_state)
 

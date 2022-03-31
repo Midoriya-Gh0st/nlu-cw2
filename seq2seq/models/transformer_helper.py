@@ -35,20 +35,24 @@ class TransformerEncoderLayer(nn.Module):
             - 使用encoder_padding_mask标记长度以给那些长度不足的句子补零;
             - TODO: 这里是标记的[111100000]还是[0000011111]?
             - 即: 标记的是有效位还是零位;
-        3.  What will the output shape of `state' Tensor be after multi-head attention?
+        3.  What will the output shape of 'state' Tensor be after multi-head attention?
             - TODO: 和1是一样的吗? 
         '''
-        # print("size::state-0,", state.size())  # torch.Size([11, 10, 128]) [src_time_steps, batch_size, embed_dim]
-        # print("size::encoder_padding_mask,", encoder_padding_mask.size())
-        # TODO: encoder_padding_mask=None, 虽然在tras.py定义了, 但是没有调用?
+        # TODO: 所有tensor的shape
 
-        # QKV: # torch.Size([11, 10, 128]) [src_time_steps, batch_size, embed_dim]
-        # mask: NoneType [batch_size, src_time_steps]
+        # print("state-in:", state.size())
+        # if encoder_padding_mask is not None:
+        #     print("encoder_padding_mask", encoder_padding_mask.size(), state.size(0))  # encoder_padding_mask torch.Size([10, 17]) 17
+        #     # encoder_padding_mask torch.Size([10, 16])
+        # else:
+        #     print("***")
+
+        # input:
+        # state.size = [src_time_steps, batch_size, encoder_embed_dim]
+        # encoder_padding_mask.size = [batch_size, src_time_steps]
         state, _ = self.self_attn(query=state, key=state, value=state, key_padding_mask=encoder_padding_mask)
-        # print("size::state-1:", state.size())
-        # torch.Size([11, 10, 128]), [src_time_steps, batch_size, encoder_embed_dim]
-        # TODO: 是encoder_embed_dim, 还是encoder_hidden_state;
-        # input()
+        # state.size = [src_time_steps, batch_size, encoder_embed_dim]
+        # torch.Size([11, 10, 128])
 
         '''
         ___QUESTION-6-DESCRIBE-D-END___
@@ -115,6 +119,7 @@ class TransformerDecoderLayer(nn.Module):
         need_attn = True if need_head_weights else need_attn
 
         residual = state.clone()
+        # TODO: 这里是self_attn, 所以QKV都是decoder, 即: target.
         state, _ = self.self_attn(query=state,
                                   key=state,
                                   value=state,
@@ -147,11 +152,51 @@ class TransformerDecoderLayer(nn.Module):
         when we predict the first word, 
         '''
         # TODO: 需要写所有的shape.
+        # input(">>> In")
+        # print(state.size())
+        # print(encoder_out.size())
+        # torch.Size([13, 10, 128])
+        # torch.Size([11, 10, 128])
+
+        # print(encoder_padding_mask.size())
+        # input params:
+        # state.size = [tgt_time_steps, batch_size, embed_dim]  torch.Size([13, 10, 128])
+        # encoder_out.size = [src_time_steps, batch_size, embed_dim]  torch.Size([11, 10, 128])
         state, attn = self.encoder_attn(query=state,
                                         key=encoder_out,
                                         value=encoder_out,
                                         key_padding_mask=encoder_padding_mask,
                                         need_weights=need_attn or (not self.training and self.need_attn))
+        # output:
+        # state.size = 下面.
+
+        # TODO: [*] 这里有encoder-out, 说明是encoder-decoder attention, 这里的key是source
+        # input(">>> Out")
+        # print(state.size())
+        # # torch.Size([13, 10, 128])
+        # if attn is not None:
+        #     print(attn.size())
+        #     # torch.Size([2, 10, 13, 11])  # TODO: 说明, 一个是target的, 一个是source的.
+        # else:
+        #     print("attn-none")
+        # print(type(encoder_padding_mask))  # TODO: 一直NoneType?
+        # if encoder_padding_mask is not None:
+        #     print(type(encoder_padding_mask.size()))
+        #     # print(encoder_padding_mask.size())
+        # else:
+        #     print("pad-none")
+        # if encoder_padding_mask is not None:
+        #     input("en-size:")
+        #     print(encoder_padding_mask.size())
+        # else:
+        #     print("^^^")  # TODO: 从来没有出现过?
+
+        # state.size = [tgt_time_steps, batch_size, encoder_embed_dim] torch.Size([1, 10, 128])  # TODO
+        # attn.size = # [self.num_heads, batch_size, tgt_time_steps, key.size(0)] torch.Size([2, 10, 1, 6])  # TODO: 如何描述?
+        # attn.size = # [self.num_heads, batch_size, tgt_time_steps, src_time_steps] torch.Size([2, 10, 1, 6]) -> ([2, 10, 25, 12])
+                                      # TODO: 但是上下的src_time_steps, 根本不一样.
+        # encoder_padding_mask.size = [batch_size, src_time_steps]
+
         '''
         ___QUESTION-6-DESCRIBE-E-END___
         '''
@@ -226,15 +271,9 @@ class MultiHeadAttention(nn.Module):
         # Get size features
         tgt_time_steps, batch_size, embed_dim = query.size()
         assert self.embed_dim == embed_dim
-
-        # TODO: 为什么QKV的size都相等? 在源码, src_len = k.size(1);
-        # print(">>> Q:", query.size())
-        # print(">>> K:", key.size())  # torch.Size([11, 10, 128])
-        # print(">>> V:", value.size())
-
         '''
         ___QUESTION-7-MULTIHEAD-ATTENTION-START
-        Implement Multi-Head attention  according to Section 3.2.2 of https://arxiv.org/pdf/1706.03762.pdf.
+        Implement Multi-Head attention according to Section 3.2.2 of https://arxiv.org/pdf/1706.03762.pdf.
         Note that you will have to handle edge cases for best model performance. Consider what behaviour should
         be expected if attn_mask or key_padding_mask are given?
         '''
@@ -245,45 +284,29 @@ class MultiHeadAttention(nn.Module):
         # attn_weights must be size [num_heads, batch_size, tgt_time_steps, key.size(0)]
         # TODO: REPLACE THESE LINES WITH YOUR IMPLEMENTATION ------------------------ CUT
 
-        attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim, self.num_heads))
-        attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, key.size(0))) if need_weights else None
-        # TODO: attn = attn_weights * value
-
         # 1. Linear projection of Query, Key and Value
         q, k, v = self.q_proj(query), self.k_proj(key), self.v_proj(value)
         # torch.size(tgt_time_steps, batch_size, embed_dim)
 
-        # 单个head的embed_size:
-        d_k = self.head_embed_size
-        # self.num_heads * self.head_embed_size = embed_size (即: embed_dim)
-
         # 2. Computing scaled dot-product attention for h attention heads.
-        # 拆分为multi-head, 即: 把 [*, *, embed_size] -> [*, *, self.num_heads, self.head_embed_size]
-        q, k, v = [x.view(x.size(0), x.size(1), self.num_heads, d_k) for x in (q, k, v)]
+        q, k, v = [x.view(x.size(0), x.size(1), self.num_heads, self.head_embed_size) for x in (q, k, v)]
         # [tgt_time_steps, batch_size, self.num_heads, self.head_embed_size]
 
-        # Transpose: 把head提到前面, 即: 第一维度为head_i. 所以之后方便把几个head给concatenate起来:
         # reshape q,k,v into torch.size(tgt_time_steps, batch_size, num_heads, head_embed_dim)
         # attn_weights must be [num_heads, batch_size, tgt_time_steps, key.size(0)]
         # so we need to transpose Q, K, V into torch.size(num_heads, batch_size, tgt_time_steps, head_embed_dim)
         q, k, v = [x.transpose(0, 2) for x in (q, k, v)]
         # [self.num_heads, batch_size, tgt_time_steps, self.head_embed_size]
-        # torch.Size([2, 10, 11, 64])
 
-        # 因为计算attn_score需要使用torch.bmm(), 要把qkv转换回3D:
-        # attn is a fixed size(tgt_time_steps, batch_size, embed_dim)
-        # for Q, K, V  tgt_time_steps is fixed, embed_dim is fixed as head_embed_dim # TODO: [?]
-        # so Q, K, V need to be reshaped into torch.size(tgt_time_step, batch_size, head_embed_dim)
+        # q, k, v need to be reshaped into torch.size(tgt_time_step, batch_size, head_embed_dim)
         q, k, v = [x.contiguous().view(self.num_heads * batch_size, -1, self.head_embed_size) for x in (q, k, v)]
         # [self.num_heads * batch_size, -1, self.head_embed_size]
-        # QKV:: torch.Size([20, 11, 64])
 
-        # TODO: 这里为什么没有src_len和tgt_len的区别? 为什么是 [tgt_time_steps, tgt_time_steps], 不是[tgt, src]?
         # attn_score: [num_heads, batch_size, tgt_time_steps, self.head_embed_size]
         attn_score = torch.bmm(q, k.transpose(1, 2))
         # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
 
-        # attn 缩放:
+        # attn scaling:
         scaled_score = attn_score / self.head_scaling
         # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
         # torch.Size([20, 11, 11])
@@ -297,14 +320,14 @@ class MultiHeadAttention(nn.Module):
             # [1, tgt_time_steps, tgt_time_steps]
             # [1, 11, 11]
 
-            # 根据torch的源码, 元素非bool_type需要使用 "additive";
+            # "additive" for not bool type
             scaled_score += attn_mask
             # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
-            #  torch.Size([20, 11, 11])
+            # torch.Size([20, 11, 11])
 
         if key_padding_mask is not None:
             scaled_score = scaled_score.view(self.num_heads, batch_size, -1, scaled_score.size(-1))
-            # [num_heads, batch_size, tgt_time_steps, tgt_time_steps]
+            # [num_heads, batch_size, tgt_time_steps, tgt_time_steps]  # TODO: src_time_steps
             # torch.Size([2, 10, 14, 14])
 
             # generate key_padding_masks for each heads
@@ -319,47 +342,30 @@ class MultiHeadAttention(nn.Module):
             # [num_heads, batch_size, tgt_time_steps, tgt_time_steps]
             # torch.Size([2, 10, 14, 14])
 
-            # 转回3d, 因为后面要用bmm
+            # back to 3D (for .bmm later)
             scaled_score = scaled_score.view(self.num_heads * batch_size, -1, scaled_score.size(-1))
             # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
 
-        attn_weights = F.softmax(scaled_score, dim=-1)
+        attn_weights = F.softmax(scaled_score, dim=-1)  # TODO: 错误, 必须有一个是key.size(0), 因为可能是tgt. 也可能是src!
         # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
         # torch.Size([20, 11, 11])
-        # print("the attn_weights:", attn_weights.size())
-        # input()
-
-        # 原先: 
-        # ---------- 
-            # key_padding_mask = key_padding_mask.unsqueeze(dim=1).repeat(self.num_heads,1,1)# generate key_padding_masks for each heads
-            # scaled_attn_weights.masked_fill(key_padding_mask, -1e10) # mask the scaled attn_weights
-        # if attn_mask is not None:
-        #     scaled_attn_weights += attn_mask.unsqueeze(dim=0)
-        # attn_weights = F.softmax(scaled_attn_weights, dim=-1)  # torch.size(num_head * batch_size, tgt_time_steps, tgt_time_steps)
-        # apply softmax function
-        # -----------
 
         # optional: apply dropout functions
         attn_weights = F.dropout(attn_weights, p=self.attention_dropout, training=self.training)
         # [num_heads * batch_size, tgt_time_steps, tgt_time_steps]
         # torch.Size([20, 11, 11])
-        # 同上
 
         # attention = attention_weights * value
         attn = torch.bmm(attn_weights, v)
         # [num_heads * batch_size, tgt_time_steps, head_embed_size]
         # torch.Size([20, 11, 64])
-        # print("bmm-attn:", attn.size())
-        # input()
 
-        # 3. 把多个head, 拼接在一起
-        # Concatenation of heads and output projection.
+        # 3. Concatenation of heads and output projection.
         # attn need to be torch.size(tgt_time_steps, batch_size, embed_dim)
         # but now it is torch.size(num_head * batch_size, tgt_time_steps, head_embed_dim)
         # so we need to convert it into torch.size(num_head, batch_size, tgt_time_steps, head_embed_dim)
 
-        # attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
-
+        # attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))  # TODO
 
         attn = attn.view(self.num_heads, batch_size, -1, self.head_embed_size)
         # [num_heads, batch_size, tgt_time_steps, head_embed_size]
@@ -371,18 +377,11 @@ class MultiHeadAttention(nn.Module):
         # at last, reshape attn
         cat_attn = attn.contiguous().view(-1, batch_size, embed_dim)
         # [tgt_time_steps, batch_size, embed_dim = num_heads * head_embed_size]
-        # print("cat-attn:", cat_attn.size())
-        # input()
 
-        # output projection
-        # attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim))
-        # self.out_proj: nn.Linear(self.embed_dim, self.embed_dim, bias=True)
         # output_projection & Wo
         attn = self.out_proj(cat_attn)
         # [tgt_time_steps, batch_size, embed_dim]
-        # torch.Size([11, 10, 128])
-        # print("output_attn:", output_attn.size())
-        # input()
+        # torch.Size([11, 10, 128]) -> torch.Size([23, 10, 128])
 
         # TODO: key.size(0), 应该为src_time_steps, 为什么和tgt_time_steps一样?
         # TODO: 还要在结尾更改attn_weights吗? 结尾是否应该合并attn_weights? 在官方文档里, 把head合并了;
@@ -390,9 +389,7 @@ class MultiHeadAttention(nn.Module):
         # torch.Size([20, 11, 11])
         attn_weights = attn_weights.view(self.num_heads, batch_size, tgt_time_steps, key.size(0))
         # [self.num_heads, batch_size, tgt_time_steps, key.size(0)]
-        # torch.Size([2, 10, 11, 11])
-        # print("final-attn-weights:", attn_weights.size())
-        # input()
+        # torch.Size([2, 10, 1, 6]) -> torch.Size([2, 10, 25, 11])  # TODO: key.size(0) 是什么? src_len?
 
         if not need_weights:
             return attn, None

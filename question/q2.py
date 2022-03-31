@@ -76,20 +76,21 @@ def statistic_q2(lang: str):
             lang_unk_f.write(word + '\n')
     print()
 
-    return lang_distinct_words
+    return lang_distinct_words, lang_unk
 
 
 if __name__ == '__main__':
-    en_distinct_words = statistic_q2('en')
-    de_distinct_words = statistic_q2('de')
+    en_distinct_words, en_unk = statistic_q2('en')
+    de_distinct_words, de_unk = statistic_q2('de')
 
     same_words_count = 0
     same_words = []
     for en_word in en_distinct_words:
         for de_word in de_distinct_words:
             if en_word == de_word:
-                same_words.append(f'{en_word}\n')
-                same_words_count += 1
+                if en_word not in en_unk and de_word not in de_unk:
+                    same_words.append(f'{en_word}\n')
+                    same_words_count += 1
 
     same_words = sorted(same_words)
     with open('same_words.txt', 'w', encoding='utf-8') as f:

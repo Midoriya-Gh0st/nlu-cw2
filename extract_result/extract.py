@@ -19,43 +19,57 @@ def read_content(file_name):
     return train_loss, valid_loss, valid_perplexity
 
 
-q1_out_log = '../question/baseline-out.txt'
-q1_tra_loss, q1_val_loss, q1_val_ppl = read_content(q1_out_log)
+# q1_out_log = '../question/baseline-out.txt'
+# q1_tra_loss, q1_val_loss, q1_val_ppl = read_content(q1_out_log)
+#
+# q2_out_log = '../question/q4-out.txt'
+# q2_tra_loss, q2_val_loss, q2_val_ppl = read_content(q2_out_log)
 
-q2_out_log = '../question/q4-out.txt'
-q2_tra_loss, q2_val_loss, q2_val_ppl = read_content(q2_out_log)
+q7_out_log = '../question/q7-out.txt'
+q7_tra_loss, q7_val_loss, q7_val_ppl = read_content(q7_out_log)
 
-print(len(q1_tra_loss))  # 5.625 -> 2.142
-print(len(q1_val_loss))  # 5.09 -> 3.3
-print(len(q1_val_ppl))  # 163 -> 27
+# print(len(q1_tra_loss))  # 5.625 -> 2.142
+# print(len(q1_val_loss))  # 5.09 -> 3.3
+# print(len(q1_val_ppl))  # 163 -> 27
 
-print(len(q2_tra_loss))  # 5.797 -> 2.323
-print(len(q2_val_loss))  # 5.43 -> 3.39
-print(len(q2_val_ppl))  # 226 -> 29.5
+# print(len(q2_tra_loss))  # 5.797 -> 2.323
+# print(len(q2_val_loss))  # 5.43 -> 3.39
+# print(len(q2_val_ppl))  # 226 -> 29.5
 
+print(len(q7_tra_loss))  #
+print(len(q7_val_loss))  #
+print(len(q7_val_ppl))  #
 
 q1_title = "Q1: 1 encoder layer, 1 decoder layer"
 q2_title = "Q4: 2 encoder layers, 3 decoder layers"
+q7_title = 'Q7: Transformer Multi-head Attention'
 
+from matplotlib.ticker import MaxNLocator
+plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+plt.gca().yaxis.set_major_locator(MaxNLocator(integer=False))
 
 def my_plot(title, tra_loss, val_loss):
-    plt.ylim([1.5, 6])
+    plt.ylim([1.2, 6])
     plt.title(title)
-    plt.plot(tra_loss)
-    plt.plot(val_loss)
+    # x = [i for i in range(20)
+    x = range(1, 21, 1)
+    plt.xlim(0, 22)
+    plt.plot(x, tra_loss)
+    plt.plot(x, val_loss)
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.legend(["train", "validation"])
     plt.show()
-    
 
 
-my_plot(q1_title, q1_tra_loss, q1_val_loss)
-my_plot(q2_title, q2_tra_loss, q2_val_loss)
 
-of_out_log = '../question/overfit-out2.txt'
-of_tra_loss, of_val_loss, of_val_ppl = read_content(of_out_log)
-my_plot("over-fitting", of_tra_loss, of_val_loss)
+# my_plot(q1_title, q1_tra_loss, q1_val_loss)
+# my_plot(q2_title, q2_tra_loss, q2_val_loss)
+my_plot(q7_title, q7_tra_loss, q7_val_loss)
+
+# of_out_log = '../question/overfit-out2.txt'
+# of_tra_loss, of_val_loss, of_val_ppl = read_content(of_out_log)
+# my_plot("over-fitting", of_tra_loss, of_val_loss)
 
 # q4:
 # validation已经收敛, 但是train还在下降, 这说明train开始"复制数据", 即过拟合;
@@ -73,7 +87,7 @@ my_plot("over-fitting", of_tra_loss, of_val_loss)
 # https://zhuanlan.zhihu.com/p/136786657
 # https://blog.ailemon.net/2019/02/26/solution-to-loss-doesnt-drop-in-nn-train/
 
-print(q2_val_loss)
+# print(q2_val_loss)
 
 # - 这种变化对dev-ppl, test-BLEU, train-loss有什么影响(所有这些都与Q1中给出的baseline指标相比)?
 #   -- dec-ppl增加 (变坏), test-BLEU下降 (变坏), train-loss[5.797->2.323], 相比[5.625->2.142], 也是增加 (变坏)
