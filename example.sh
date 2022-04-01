@@ -16,8 +16,7 @@ RESULTS_ROOT="${ROOT}/results"
 mkdir -p "${RESULTS_ROOT}"
 
 ### NAME YOUR EXPERIMENT HERE ##
-# EXP_NAME="baseline"
-EXP_NAME="tf-extreme"
+EXP_NAME="1-lexical"
 ################################
 
 ## Local variables for current experiment
@@ -29,8 +28,8 @@ FALSE="False"
 ENCODER_LAYERS_NUM="1"
 DECODER_LAYERS_NUM="1"
 LEXICAL='True'
-ARCH='transformer'
-# ARCH='lstm'
+ARCH='lstm'
+
 
 mkdir -p ${EXP_ROOT}
 
@@ -39,10 +38,10 @@ python train.py --save-dir "${EXP_ROOT}" \
                 --log-file "${EXP_ROOT}/log.out"  \
                 --data "${DATA_DIR}" \
                 --arch "${ARCH}" \
-                ## --decoder-use-lexical-model "${LEXICAL}" \
+                --decoder-use-lexical-model "${LEXICAL}" \
                 # --train-on-tiny
-#                --encoder-num-layers "${ENCODER_LAYERS_NUM}" \
-#                --decoder-num-layers "${DECODER_LAYERS_NUM}" \
+                # --encoder-num-layers "${ENCODER_LAYERS_NUM}" \
+                # --decoder-num-layers "${DECODER_LAYERS_NUM}" \
 
                 ### --encoder-bidirectional "${FALSE}" ###
                 ### ADDITIONAL ARGUMENTS HERE ###
