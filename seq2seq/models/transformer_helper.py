@@ -104,7 +104,7 @@ class TransformerDecoderLayer(nn.Module):
         # need_attn must be True if need_head_weights
         need_attn = True if need_head_weights else need_attn
 
-        residual = state.clone()
+        residual = state.clone()  # TODO
 
         state, _ = self.self_attn(query=state,
                                   key=state,
@@ -213,11 +213,6 @@ class MultiHeadAttention(nn.Module):
         tgt_time_steps, batch_size, embed_dim = query.size()
         assert self.embed_dim == embed_dim
 
-        # TODO: 为什么QKV的size都相等? 在源码, src_len = k.size(1);
-        # print(">>> Q:", query.size())
-        # print(">>> K:", key.size())  # torch.Size([11, 10, 128])
-        # print(">>> V:", value.size())
-
         '''
         ___QUESTION-7-MULTIHEAD-ATTENTION-START
         Implement Multi-Head attention according to Section 3.2.2 of https://arxiv.org/pdf/1706.03762.pdf.
@@ -232,13 +227,6 @@ class MultiHeadAttention(nn.Module):
         # TODO: REPLACE THESE LINES WITH YOUR IMPLEMENTATION ------------------------ CUT
         attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim, self.num_heads))
         attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, key.size(0))) if need_weights else None
-
-        # sent_len:
-
-        attn = torch.zeros(size=(tgt_time_steps, batch_size, embed_dim, self.num_heads))
-        attn_weights = torch.zeros(size=(self.num_heads, batch_size, tgt_time_steps, key.size(0))) if need_weights else None
-
-        # sent_len: 
 
         # 1. Linear projection of Query, Key and Value
         q, k, v = self.q_proj(query), self.k_proj(key), self.v_proj(value)
@@ -299,9 +287,6 @@ class MultiHeadAttention(nn.Module):
 
         attn_weights = F.softmax(scaled_score, dim=-1)
         # [num_heads * batch_size, tgt_time_steps, sent_len]
-
-        # apply softmax function
-        # -----------
 
         # optional: apply dropout functions
         attn_weights = F.dropout(attn_weights, p=self.attention_dropout, training=self.training)

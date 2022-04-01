@@ -225,7 +225,8 @@ class TransformerDecoder(Seq2SeqDecoder):
             3.  What is the dimensionality of forward_state after this line? 
             4.  What would the output represent if features_only=True?
             '''
-            forward_state = self.embed_out(forward_state) #[batch_size, tgt_time_steps, tgt_dict_len]
+            forward_state = self.embed_out(forward_state)
+            # [batch_size, tgt_time_steps, tgt_dict_len]
             '''
             ___QUESTION-6-DESCRIBE-C-END___
             '''

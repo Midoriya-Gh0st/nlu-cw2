@@ -115,7 +115,6 @@ class LSTMEncoder(Seq2SeqEncoder):
         # Embed tokens and apply dropout
         batch_size, src_time_steps = src_tokens.size()
         src_embeddings = self.embedding(src_tokens)
-        # print(src_embeddings.size())  # torch.Size([10, 22, 64])
         _src_embeddings = F.dropout(src_embeddings, p=self.dropout_in, training=self.training)
         # Transpose batch: [batch_size, src_time_steps, num_features] -> [src_time_steps, batch_size, num_features]
         src_embeddings = _src_embeddings.transpose(0, 1)
@@ -150,10 +149,9 @@ class LSTMEncoder(Seq2SeqEncoder):
         '''
         if self.bidirectional:
             def combine_directions(outs):
-                return torch.cat([outs[0: outs.size(0): 2], outs[1: outs.size(0): 2]], dim=2)  # TODO: 不是按方向,
+                return torch.cat([outs[0: outs.size(0): 2], outs[1: outs.size(0): 2]], dim=2)
             final_hidden_states = combine_directions(final_hidden_states)
             # final_hidden_states.size = [num_layers, batch_size, 2 * hidden_size]
-            # print(f"cat-size: {final_hidden_states.size()}")  # torch.Size([1, 10, 128])
             final_cell_states = combine_directions(final_cell_states)
             # final_cell_states.size = [num_layers, batch_size, 2 * hidden_size]
         '''___QUESTION-1-DESCRIBE-A-END___'''
@@ -228,7 +226,7 @@ class AttentionLayer(nn.Module):
         # projected_encoder_out.size = [batch_size, output_dims, src_time_steps]
 
         # [batch_size, input_dims]
-        attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)  # TODO: 这里用的不是简单的ht*hs吗?
+        attn_scores = torch.bmm(tgt_input.unsqueeze(dim=1), projected_encoder_out)
         # [batch_size, 1, input_dims] * [batch_size, output_dims, src_time_steps] = 
         # attn_scores.size = [batch_size, 1, src_time_steps]
 
@@ -389,7 +387,6 @@ class LSTMDecoder(Seq2SeqDecoder):
 
                     h_t_l = torch.tanh(self.ffnn(f_t_l)) + f_t_l  # use a one-hidden-layer FFNN with skip connections (residual)
                     # h_t_l.size = [batch_size, embed_dim]
-                    # torch.Size([10, 1, 64])
 
                     lexical_contexts.append(h_t_l)  # collect the lexical_context;
                     # TODO: --------------------------------------------------------------------- /CUT
@@ -418,11 +415,7 @@ class LSTMDecoder(Seq2SeqDecoder):
             # TODO: --------------------------------------------------------------------- CUT
             # lexical_contexts: [tgt_time_steps, batch_size, num_features]
             final_tensor = torch.stack(lexical_contexts, 0)
-
             predict_input = torch.Tensor(final_tensor).transpose(0, 1)
-            # .squeeze()  # ([10, 26, 1, 4420]) => ([10, 26, 4420])
-
-            # decoder_out: ([10, 26, 4420])
             decoder_output = self.predictoutput(predict_input) + decoder_output
         return decoder_output, attn_weights
 

@@ -17,7 +17,7 @@ mkdir -p "${RESULTS_ROOT}"
 
 ### NAME YOUR EXPERIMENT HERE ##
 # EXP_NAME="baseline"
-EXP_NAME="tf-final2"
+EXP_NAME="tf-extreme"
 ################################
 
 ## Local variables for current experiment
