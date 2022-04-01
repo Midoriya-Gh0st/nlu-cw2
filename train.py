@@ -113,7 +113,6 @@ def main(args):
 
         # Iterate over the training set
         for i, sample in enumerate(progress_bar):
-            # -- 遍历training set
             if len(sample) == 0:
                 continue
             model.train()
@@ -123,28 +122,17 @@ def main(args):
             1.  Add tensor shape annotation to each of the output tensor
             2.  Add line-by-line description about the following lines of code do.
             '''
-            # print(sample['src_tokens'].size())    [10, 11]
-            # print(sample['src_lengths'].size())   # [10]
-            # print(sample['tgt_inputs'].size())    [10, 11]
             output, _ = model(sample['src_tokens'], sample['src_lengths'], sample['tgt_inputs'])
             # output.size = [batch_size, tgt_time_steps, tgt_dictionary_length]
-            # torch.Size([10, 11, 4420]),
-            # fit train data and get decoder out
 
             loss = \
                 criterion(output.view(-1, output.size(-1)), sample['tgt_tokens'].view(-1)) / len(sample['src_lengths'])
             # loss.size = []  # scaler
-            # 根据CrossEntropyLoss,
-            # 除src_len, 看平均loss, 不然对于不同长度的句子, loss的合不同, 无法比较
-            # print("the loss:", loss)  # torch.Size([]) = 0, only one scalar.
-            # tensor(26.5837, grad_fn=<DivBackward0>)
 
             loss.backward()
 
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
             # grad_norm.size = []  # a single vector
-            # <class 'torch.Tensor'> tensor(2.3487)
-            # https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html
 
             optimizer.step()
 

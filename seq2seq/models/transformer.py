@@ -73,7 +73,6 @@ class TransformerEncoder(Seq2SeqEncoder):
         self.max_src_positions = args.max_src_positions
         self.embedding = generate_embedding(len(dictionary), self.embed_dim, dictionary.pad_idx)
         self.embed_scale = 1.0 if args.no_scale_embedding else math.sqrt(self.embed_dim)
-        # print("init_embd:", type(self.embedding))  # Embedding;
 
         self.embed_positions = PositionalEmbedding(
             self.embed_dim, padding_idx=self.padding_idx, init_size=self.max_src_positions + self.padding_idx + 1
@@ -84,20 +83,15 @@ class TransformerEncoder(Seq2SeqEncoder):
         # Generate N identical Encoder Layers
         self.layers.extend([
             TransformerEncoderLayer(args)
-            for _ in range(args.encoder_layers)  # 产生n个 EncoderLayer
+            for _ in range(args.encoder_layers)
         ])
 
     def forward(self, src_tokens, src_lengths):
         # Embed tokens indices
-        # print('size::embd(src_token):', self.embedding(src_tokens).size())  # src_token: torch.Size([10, 11, 128])
-        # print('size::src_token:', src_tokens.size())  # [10, 11], [batch_size, src_time_steps]
+        # src_tokens.size()=[batch_size, src_time_steps]
         embeddings = self.embed_scale * self.embedding(src_tokens)
-        # TODO: src_tokens是一个batch的sents, 这里用Object::Embedding()提取出这些sents的embeddings.
-        # Embedding: 4000 * 128, 每个单词是一个vector, 长度为128;
         # [batch_size, src_time_steps, embed_dim]
 
-        # print("[test-60]")
-        # print("size::embd-0:", embeddings.size())  # torch.Size([10, 11, 128])
 
         # Clone for output state
         src_embeddings = embeddings.clone()
@@ -106,17 +100,10 @@ class TransformerEncoder(Seq2SeqEncoder):
         ___QUESTION-6-DESCRIBE-A-START___
         1.  Add tensor shape annotation to each of the output tensor
         2.  What is the purpose of the positional embeddings in the encoder and decoder? 
-            - 普通的attention, 没有记录位置信息.
-            - capture posi info.
-            - ...
         3.  Why can't we use only the embeddings similar to for the LSTM? 
-            # Question 6-a-3 asks why transformers require positional embeddings while LSTMs do not. 
-            - lstm是顺序的, 逐个产生, 通过recurrent, 因此在其memory里记录了"位置信息";
-            - 普通attention不包含位置信息, 比如 "how are you" 和 "how you are" 会产生相同的attention (相同attn, 还是相同attn_score); 
         '''
         embeddings += self.embed_positions(src_tokens)
-        # print("size::embd-1:", embeddings.size())
-        # torch.Size([10, 11, 128])  [batch_size, src_time_steps, embed_dim]
+        # torch.Size([batch_size, src_time_steps, embed_dim])
         '''
         ___QUESTION-6-DESCRIBE-A-END___
         '''
@@ -126,17 +113,9 @@ class TransformerEncoder(Seq2SeqEncoder):
         forward_state = forward_state.transpose(0, 1)
 
         # Compute padding mask for attention
-        # print(">>> src_tokens", src_tokens)
         encoder_padding_mask = src_tokens.eq(self.padding_idx)
-        # print(">>> self.padding_idx", self.padding_idx)  # 0
-        # print(">>> encoder_padding_mask", encoder_padding_mask)  # 0
         if not encoder_padding_mask.any():
-            # print("happen: if not encoder_padding_mask")
             encoder_padding_mask = None
-
-        # print("encoder_padding_mask:", encoder_padding_mask.size())  # torch.Size([10, 11])
-        # input()
-
         # Forward pass through each Transformer Encoder Layer
         for layer in self.layers:
             forward_state = layer(state=forward_state, encoder_padding_mask=encoder_padding_mask)
@@ -185,10 +164,6 @@ class TransformerDecoder(Seq2SeqDecoder):
         # Embed positions
         positions = self.embed_positions(tgt_inputs, incremental_state=incremental_state)
 
-        # print("the out:", tgt_inputs[:, -1:].size())
-
-        # print("inc_state:", incremental_state)
-
         # Incremental decoding only needs the single previous token
         if incremental_state is not None:
             tgt_inputs = tgt_inputs[:, -1:]
@@ -201,8 +176,6 @@ class TransformerDecoder(Seq2SeqDecoder):
 
         # Transpose batch: [batch_size, src_time_steps, num_features] -> [tgt_time_steps, batch_size, num_features]
         forward_state = forward_state.transpose(0, 1)
-        # TODO: 任何时候, src_time_steps == tgt_time_steps 吗?
-        # 应该都改成tgt_time_steps
 
         # Generate padding mask
         self_attn_padding_mask = tgt_inputs.eq(self.padding_idx) if tgt_inputs.eq(self.padding_idx).any() else None
@@ -218,26 +191,11 @@ class TransformerDecoder(Seq2SeqDecoder):
             ___QUESTION-6-DESCRIBE-B-START___
             1.  Add tensor shape annotation to each of the output tensor
             2.  What is the purpose of self_attn_mask? 
-                - 把后面的steps的attention给mask掉;
             3.  Why do we need it in the decoder but not in the encoder?
-                - self_attn是句子所有词之间做attention, 需要和每个word之间联系, 得到attention, 句间关系, .. 
-                - encoder需要这样的全面的关系, 但是decoder要防止被future info影响, 只看当前输出之前的.
-                
-                - 在decoder中, 需要在当前tgt_step, 把后面的steps给mask掉, 只保留当前时刻的关于src的attention;
-                - 在encoder中不需要, encoder需要一个全面的attention; 
-                - Decoder 还需要防止标签泄露，即在 t 时刻不能看到 t 时刻之后的信息. 即除了padding_mask, 还需要sequence_mask;
             4.  Why do we not need a mask for incremental decoding?
-                - https://www.google.com/search?q=what%27s+incremental+decoding&oq=what%27s+incremental+decoding&aqs=chrome..69i57.37882j0j7&sourceid=chrome&ie=UTF-8
-                - Incremental decoding is a special mode at inference time where the Model only receives a single time-step of 
-                  input corresponding to the previous output token (for teacher forcing) and must produce the next output *incrementally*. 
-                - https://fairseq.readthedocs.io/en/latest/_modules/fairseq/models/fairseq_incremental_decoder.html
-                - https://github.com/pytorch/fairseq/issues/1003
             '''
-            # TODO: incremental decoding
             self_attn_mask = self.buffered_future_mask(forward_state) if incremental_state is None else None
             # [tgt_time_steps, tgt_time_steps]
-            # print("size::self_attn_mask", self_attn_mask.size())  # [11, 11], .. [17, 17]
-            # TODO: 为什么? - 逐步释放, 呈阶梯状(对角线);
             '''
             ___QUESTION-6-DESCRIBE-B-END___
             '''
@@ -264,21 +222,10 @@ class TransformerDecoder(Seq2SeqDecoder):
             ___QUESTION-6-DESCRIBE-C-START___
             1.  Add tensor shape annotation to each of the output tensor
             2.  Why do we need a linear projection after the decoder layers? 
-                - 对embedding(还是hidden_state)进行投影, 生成包含每个单词的prob_dist;
-                - 这里说的是, "after the decoder layers", 是说最后生成每个单词的概率吗?
-                - 还是就是仅仅这一行的代码的作用?
-                classify
             3.  What is the dimensionality of forward_state after this line? 
-                - [10, 11, 4420]
             4.  What would the output represent if features_only=True?
-                - 不执行linear....., 直接输出decoder_output;
-                - 只输出hidden, embed, 
             '''
-            # print("size::forward_state-0:", forward_state.size())
-            # [10, 11, 128]
-            forward_state = self.embed_out(forward_state)
-            # print("size::forward_state-1:", forward_state.size())
-            # [10, 11, 4420]  # target_dictionary_len
+            forward_state = self.embed_out(forward_state) #[batch_size, tgt_time_steps, tgt_dict_len]
             '''
             ___QUESTION-6-DESCRIBE-C-END___
             '''
