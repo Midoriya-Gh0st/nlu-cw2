@@ -80,7 +80,6 @@ def main(args):
 
     # Build model and optimization criterion
     model = models.build_model(args, src_dict, tgt_dict)
-    print(">>> train.py\n[args]:", args)
     logging.info('Built a model with {:d} parameters'.format(sum(p.numel() for p in model.parameters())))
     criterion = nn.CrossEntropyLoss(ignore_index=src_dict.pad_idx, reduction='sum')
 
@@ -113,6 +112,7 @@ def main(args):
 
         # Iterate over the training set
         for i, sample in enumerate(progress_bar):
+
             if len(sample) == 0:
                 continue
             model.train()
@@ -123,19 +123,12 @@ def main(args):
             2.  Add line-by-line description about the following lines of code do.
             '''
             output, _ = model(sample['src_tokens'], sample['src_lengths'], sample['tgt_inputs'])
-            # output.size = [batch_size, tgt_time_steps, tgt_dictionary_length]
 
             loss = \
                 criterion(output.view(-1, output.size(-1)), sample['tgt_tokens'].view(-1)) / len(sample['src_lengths'])
-            # loss.size = []  # scaler
-
             loss.backward()
-
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
-            # grad_norm.size = []  # a single vector
-
             optimizer.step()
-
             optimizer.zero_grad()
             '''___QUESTION-1-DESCRIBE-F-END___'''
 

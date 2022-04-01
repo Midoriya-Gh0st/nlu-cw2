@@ -31,7 +31,6 @@ def get_args():
 
 def main(args):
     """ Main translation function' """
-    print(">>> in translate.py")
     # Load arguments from checkpoint
     torch.manual_seed(args.seed)
     state_dict = torch.load(args.checkpoint_path, map_location=lambda s, l: default_restore_location(s, 'cpu'))
@@ -56,7 +55,6 @@ def main(args):
                                                                          seed=args.seed))
     # Build model and criterion
     model = models.build_model(args, src_dict, tgt_dict)
-    print(">>>>> translate.py\n[args:]", args)
     if args.cuda:
         model = model.cuda()
     model.eval()
