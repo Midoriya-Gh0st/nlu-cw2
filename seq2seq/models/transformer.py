@@ -92,7 +92,6 @@ class TransformerEncoder(Seq2SeqEncoder):
         embeddings = self.embed_scale * self.embedding(src_tokens)
         # [batch_size, src_time_steps, embed_dim]
 
-
         # Clone for output state
         src_embeddings = embeddings.clone()
 
@@ -116,6 +115,7 @@ class TransformerEncoder(Seq2SeqEncoder):
         encoder_padding_mask = src_tokens.eq(self.padding_idx)
         if not encoder_padding_mask.any():
             encoder_padding_mask = None
+
         # Forward pass through each Transformer Encoder Layer
         for layer in self.layers:
             forward_state = layer(state=forward_state, encoder_padding_mask=encoder_padding_mask)
